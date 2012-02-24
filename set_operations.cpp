@@ -1,6 +1,13 @@
 #include <vector>
 #include "set_operations.h"
 
+/* A set of functions for set operations when a set is a 64 bit unsigned
+   integer, or a vset, which is a c++ vector os unsigned ints.
+
+   All algorithms based off those described in Chapter 1 of the textbook
+   "Combinatorial Algorithms" by Donald Kreher and Douglas Stinson
+*/
+
 // inserts bit into set
 // algorithm 1.3
 void set_insert( int u, vset &S ){

@@ -14,15 +14,27 @@ class g {
 
  public:
   g( int vsize );
+  ~g();
 
  public:
   void add_edge( int u, int v );
+  void remove_edge( int u, int v);
+  void remove_vs( int *v, int k );
   int make_residue_circ( int r );
-  void print();
+  void print( ostream * o = &cout );
+  void gen_sparse_h( ostream * = &cout );
   
+ private:
+  void count_tris();
+  void get_tris();
+  void recalc_edges();
  
  private:
-  int n, arraySize, numEdges;
+  int n, arraySize, numEdges, oldN;
+  int numTris;
+  int ** edges;
+  int ** tris;
+  bool calcedTris;
   vector<vset> gA;
 
 };

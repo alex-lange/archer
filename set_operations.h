@@ -14,9 +14,9 @@ const uint64_t empty = 0;
 void set_insert( int u, vset &S );
 void set_delete( int u, vset &S );
 bool in_set( int u, vset S );
-void set_cut( int u, vset &S );
-vset set_union( vset S, vset R);
-vset set_intersection( vset S, vset R);
+void set_cut( int u, vset &S, int arraySize );
+vset set_union( vset S, vset R, int arraySize );
+vset set_intersection( vset S, vset R, int arraySize );
 bool not_empty( vset S );
 
 #endif
