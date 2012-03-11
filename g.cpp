@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #include "g.h"
 #include "number_algorithms.h"
@@ -58,11 +59,20 @@ void g::remove_edge( int u, int v ){
   }
 }
 
-void g::remove_vs( int * v, int k ){
+void g::remove_vs( int * cuts, int k ){
   int x;
   int removed = 0;
+  
+  // gets the array of cuts and sorts them
+  int elements = sizeof(cuts) / sizeof(cuts[0]);
+  sort(cuts,cuts+elements);
+  for( int i = 0; i < k; i++ ){
+    cuts[i] = cuts[i] - i;
+  }
+  
+  // remove each vertex from the graph
   for( int j = 0; j < k; j++ ){
-    x = v[j] - removed;
+    x = cuts[j] - removed;
     //cout << "Removing " << v << "..." << endl;
     for( int i = 0; i < n; i++ ){
       if( i != x ){
