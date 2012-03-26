@@ -36,8 +36,7 @@ g::~g(){
 }
 
 void g::add_edge( int u, int v ){
-  if( u < n && u >= 0 && v < n && v >= 0
-      && !in_set(u, gA[v]) && !in_set(v, gA[u]) ){
+  if( u < n && u >= 0 && v < n && v >= 0 ){
     numEdges++;
     set_insert( u, gA[v] );
     set_insert( v, gA[u] );
@@ -45,7 +44,17 @@ void g::add_edge( int u, int v ){
     edges[v][u] = numEdges;
   }
   else{
-    cerr << "Error: Invalid vertices" << endl;
+    cerr << "Error: Invalid vertices " << u << " and " << v << endl;
+    cerr << "Size of graph = " << n << endl;
+  }
+}
+
+
+void g::add_circ_edge( int d ){
+  int x;
+  for( int v = 0; v < n; v++ ){
+    x = ( v + d ) % n;
+    add_edge( v, x );
   }
 }
 
@@ -58,6 +67,18 @@ void g::remove_edge( int u, int v ){
     edges[u][v] = 0;
     edges[v][u] = 0;
   }
+}
+
+void g::remove_circ_edge( int d ){
+  int x;
+  for( int v = 0; v < n; v++ ){
+    x = ( v + d ) % n;
+    remove_edge( v, x );
+  }
+}
+
+bool g::is_edge( int u, int v ){
+  return in_set( u, gA[v] );
 }
 
 void g::remove_vs( int * cuts, int k ){
@@ -117,7 +138,33 @@ void g::make_circ( vector<int> dists ){
 }
 
 void g::make_embedded_rc( int r, int num ){
-
+  int subsize = n / num;
+  vector< g* > subgraphs;
+  //g sub( subsize );
+  //sub.make_residue_circ( r );
+  int current, x, y, stepx, stepy;
+  for( int i = 0; i < num; i++ ){
+    subgraphs.push_back( new g(subsize) );
+    subgraphs[i]->make_residue_circ( r );
+    //subgraphs[i]->print();
+  }
+ 
+  for( int i = 0; i < n; i++ ){
+    for( int j = 0; j < n; j++ ){
+      x = i % subsize;
+      y = j % subsize;
+      stepx = i / subsize;
+      stepy = j /subsize;
+      if( stepx == stepy ){
+	if( subgraphs[stepx]->is_edge( x, y ) ){
+	  add_edge( i, j );
+	}
+      }
+    }
+  }
+  for( int i = 0; i < num; i++ ){
+    delete subgraphs[i];
+  }
 }
 
 int g::remove_k( int k, bool remove ){
@@ -254,7 +301,7 @@ void g::recalc_edges(){
   numEdges = 0;
   for( int i = 0; i < n - 1; i++ ){
     for( int j = i; j < n; j++ ){
-      if( in_set( j, gA[i] )){
+      if( is_edge(i, j)){
 	numEdges++;
 	edges[i][j] = numEdges;
 	edges[j][i] = numEdges;
@@ -285,9 +332,8 @@ void g::print( ostream * o ){
 }
 
 void g::print_sparse_h( ostream * o, bool isRudy ){
-  count_tris();
-  get_tris();
   recalc_edges();
+  get_tris();
 
   int a, b, c;
   int j = 0;
@@ -321,9 +367,8 @@ void g::print_sparse_h( ostream * o, bool isRudy ){
 }
 
 void g::print_sat( ostream *o ){
-  count_tris();
-  get_tris();
   recalc_edges();
+  get_tris();
 
   int a, b, c;
   

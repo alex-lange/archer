@@ -22,6 +22,23 @@ class add_edge_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+class add_circ_edge_command : public GraphCommand{
+ public:
+  add_circ_edge_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+class remove_circ_edge_command : public GraphCommand{
+ public:
+  remove_circ_edge_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
 
 class print_command : public GraphCommand{
  public:
@@ -49,6 +66,14 @@ class make_circ_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+class make_embedded_rc_command : public GraphCommand{
+ public:
+  make_embedded_rc_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
 
 class add_all_noncrit_command : public GraphCommand{
  public:
@@ -67,10 +92,36 @@ class remove_k_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+class count_k_command : public GraphCommand{
+ public:
+  count_k_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
 
 class print_sparse_command : public GraphCommand{
  public:
   print_sparse_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
+class print_rudy_command : public GraphCommand{
+ public:
+  print_rudy_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
+class print_sat_command : public GraphCommand{
+ public:
+  print_sat_command();
 
  public:
   void execute( g * graph, vector<string> args);

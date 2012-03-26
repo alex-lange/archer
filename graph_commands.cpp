@@ -28,6 +28,7 @@ void remove_edge_command::execute( g * graph, vector<string> args){
   graph->remove_edge( iArgs[0], iArgs[1] );
 }
 
+
 add_edge_command::add_edge_command(){
   name = "add_e";
   GraphCommandBase::base().register_c( name, this );
@@ -46,6 +47,34 @@ void add_edge_command::execute( g * graph, vector<string> args){
 
   graph->add_edge( iArgs[0], iArgs[1] );
 }
+
+
+add_circ_edge_command::add_circ_edge_command(){
+  name = "add_ce";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void add_circ_edge_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->add_circ_edge( atoi( pos->c_str() ) );
+}
+
+remove_circ_edge_command::remove_circ_edge_command(){
+  name = "remove_ce";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void remove_circ_edge_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->remove_circ_edge( atoi( pos->c_str() ) );
+}
+
 
 
 make_res_circ_command::make_res_circ_command(){
@@ -92,6 +121,20 @@ void make_circ_command::execute( g * graph, vector<string> args){
 }
 
 
+make_embedded_rc_command::make_embedded_rc_command(){
+  name = "mk_erc";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_embedded_rc_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 2 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  
+  graph->make_embedded_rc( atoi( pos->c_str() ), atoi( (pos+1)->c_str()) );
+}
+
 
 add_all_noncrit_command::add_all_noncrit_command(){
   name = "add_all";
@@ -121,10 +164,24 @@ void remove_k_command::execute( g * graph, vector<string> args){
     throw "Invalid argument number for " + name;
   }
   int k = atoi( pos->c_str() );
-  
-
   int removed = graph->remove_k( k );
   cout << "Removed " << removed << " K" << k << "'s" << endl;
+}
+
+
+count_k_command::count_k_command(){
+  name = "count_k";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void count_k_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  int k = atoi( pos->c_str() );
+  int count = graph->remove_k( k, false );
+  cout << "Graph has " << count << " K" << k << "'s" << endl;
 }
 
 
@@ -163,11 +220,59 @@ void print_sparse_command::execute( g * graph, vector<string> args){
   }
 }
 
+
+print_rudy_command::print_rudy_command(){
+  name = "printf_rh";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void print_rudy_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  string filename = *pos;
+  ofstream sparseH (filename.c_str());
+  if( sparseH.is_open() ){
+    graph->print_sparse_h( &sparseH, true );
+  }
+  else{
+    throw "Error opening file " + filename;
+  }
+}
+
+
+print_sat_command::print_sat_command(){
+  name = "printf_sat";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void print_sat_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  string filename = *pos;
+  ofstream sparseH (filename.c_str());
+  if( sparseH.is_open() ){
+    graph->print_sat( &sparseH );
+  }
+  else{
+    throw "Error opening file " + filename;
+  }
+}
+
 remove_edge_command removeEdgeCommand;
 add_edge_command addEdgeCommand;
+add_circ_edge_command addCircEdgeCommand;
+remove_circ_edge_command removeCircEdgeCommand;
 make_res_circ_command makeResCircCommand;
 make_circ_command makeCircCommand;
+make_embedded_rc_command makeEmbeddedRCCommand;
 add_all_noncrit_command addAllNonCritCommand;
 remove_k_command removeKCommand;
+count_k_command countKCommand;
 print_sparse_command printSparseCommand;
 print_command printCommand;
+print_rudy_command printRudyCommand;
+print_sat_command printSatCommand;

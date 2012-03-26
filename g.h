@@ -18,7 +18,10 @@ class g {
 
  public:
   void add_edge( int u, int v );
+  void add_circ_edge( int d );
   void remove_edge( int u, int v);
+  void remove_circ_edge( int e );
+  bool is_edge( int u, int v );
   void remove_vs( int *v, int k );
   void make_residue_circ( int r );
   void make_circ( vector<int> dists );
