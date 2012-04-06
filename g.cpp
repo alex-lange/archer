@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdlib.h>
+#include <time.h>
 
 #include "g.h"
 #include "number_algorithms.h"
@@ -33,6 +34,10 @@ g::~g(){
   }
 
   delete[] edges;
+}
+
+int g::size(){
+  return n;
 }
 
 void g::add_edge( int u, int v ){
@@ -81,21 +86,25 @@ bool g::is_edge( int u, int v ){
   return in_set( u, gA[v] );
 }
 
-void g::remove_vs( int * cuts, int k ){
+void g::remove_vs( vector<int> cuts, int k ){
   int x;
   int removed = 0;
   
   // gets the array of cuts and sorts them
-  int elements = sizeof(cuts) / sizeof(cuts[0]);
-  sort(cuts,cuts+elements);
+  //int elements = sizeof(cuts) / sizeof(cuts[0]);
+  //cout << elements << endl;
+  sort(cuts.begin(),cuts.end());
+  cout << "Cuts: ";
   for( int i = 0; i < k; i++ ){
+    cout << cuts[i] << " ";
     cuts[i] = cuts[i] - i;
   }
+  cout << endl;
   
   // remove each vertex from the graph
   for( int j = 0; j < k; j++ ){
-    x = cuts[j] - removed;
-    //cout << "Removing " << v << "..." << endl;
+    x = cuts[j];
+    cout << "Removing " << x << "..." << endl;
     for( int i = 0; i < n; i++ ){
       if( i != x ){
 	set_cut( x, gA[i], arraySize );
@@ -105,9 +114,17 @@ void g::remove_vs( int * cuts, int k ){
       }
     }  
     n--;
-    removed++;
   }
   recalc_edges();
+}
+
+void g::remove_randvs( int num ){
+  vector<int> vs;
+  srand((unsigned)time(0));
+  for( int i = 0; i < num; i++ ){
+    vs.push_back( rand() % n );
+  }
+  remove_vs( vs, num );
 }
 
 void g::make_residue_circ( int r ){
@@ -165,6 +182,32 @@ void g::make_embedded_rc( int r, int num ){
   for( int i = 0; i < num; i++ ){
     delete subgraphs[i];
   }
+}
+
+bool g::join_graphs( int num, vector<g*> graphs ){
+  int sum = 0;
+  for( int i = 0; i < num; i++ ){
+    sum += graphs[i]->size();
+  }
+  if( sum != n ){
+    return false;
+  }
+  int current = 0;
+  int start = 0;
+  int end;
+  while( current < num ){
+    end = graphs[current]->size();
+    for( int i = 0; i < end - 1; i++ ){
+      for( int j = i; j < end; j++ ){
+	if( graphs[current]->is_edge( i, j ) ){
+	  add_edge( start + i, start + j );
+	}
+      }
+    }
+    start += end;
+    current++;
+  }
+  return true;
 }
 
 int g::remove_k( int k, bool remove ){
@@ -363,6 +406,51 @@ void g::print_sparse_h( ostream * o, bool isRudy ){
 
     *o << b << " " << c << weight << endl;
     j++;
+  }
+}
+
+void g::print_sdpa( ostream * o ){
+  recalc_edges();
+  get_tris();
+
+  int a, b, c;
+  int j = 0;
+
+  int degrees[ numEdges ];
+  for( int i = 0; i < numEdges; i++ ){
+    degrees[i] = 0;
+  }
+
+  *o << "*This graph" << endl;
+  *o << numEdges << endl;
+  *o << 1 << endl;
+  *o << numEdges << endl;
+  *o << 1;
+  for( int i = 0; i < numEdges-1; i++ ){
+    *o << ", " << 1;
+  }
+  *o << endl;
+
+  for( int t = 0; t < numTris; t++ ){
+    a = tris[t][0];
+    b = tris[t][1];
+    c = tris[t][2];
+
+    degrees[a-1] += 2;
+    degrees[b-1] += 2;
+    degrees[c-1] += 2;
+ 
+    *o << "0 1 " << a << " " << b << " -1" << endl;
+    *o << "0 1 " << a << " " << c << " -1" << endl;
+    *o << "0 1 " << b << " " << c << " -1" << endl;
+  }  
+
+  for( int i = 0; i < numEdges; i++ ){
+    *o << "0 1 " << i+1 << " " << i+1 << " " << degrees[i] << endl;
+  }
+
+  for( int i = 1; i <= numEdges; i++ ){
+    *o << i << " 1 " << i << " " << i << " 1" << endl;
   }
 }
 

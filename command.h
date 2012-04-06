@@ -12,12 +12,13 @@
 
 using namespace std;
 
-const string prompt = ">> ";
+const string prompt = "-> ";
 
 class GraphCommand{
  public:
   virtual ~GraphCommand(){}
   virtual void execute( g * graph, vector<string> args) = 0;
+  virtual void execute( g * graph, vector<g*> args);
  protected:
   string name;
 };

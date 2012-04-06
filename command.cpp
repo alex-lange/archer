@@ -7,6 +7,10 @@
 
 #include "command.h"
 
+void GraphCommand::execute( g * graph, vector<g*> args){
+
+}
+
 GraphCommandBase & GraphCommandBase::base(){
   static GraphCommandBase gcb;
   return gcb;
@@ -54,6 +58,15 @@ void GraphCommandBase::run(){
 	  else{
 	    register_g( parts[1], new g( atoi( parts[2].c_str() ) ) );
 	  }
+	}
+	else if( parts[0] == "mk_join" ){
+	  vector<g*> graphs;
+	  while( parts.size() > 2 ){
+	    graphs.push_back( lookup_graph( parts[0], parts.back() ) );
+	    parts.pop_back();
+	  }
+	  lookup_command(parts[0])->execute( lookup_graph(parts[0], parts[1]),
+					     graphs );
 	}
 	else{
 	  lookup_command(parts[0])->execute( lookup_graph(parts[0], parts[1]), 

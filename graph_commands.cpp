@@ -76,6 +76,19 @@ void remove_circ_edge_command::execute( g * graph, vector<string> args){
 }
 
 
+remove_rand_vs_command::remove_rand_vs_command(){
+  name = "remove_vs_rand";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void remove_rand_vs_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->remove_randvs( atoi( pos->c_str() ) );
+}
+
 
 make_res_circ_command::make_res_circ_command(){
   name = "mk_rc";
@@ -89,6 +102,20 @@ void make_res_circ_command::execute( g * graph, vector<string> args){
   }
   graph->make_residue_circ( atoi( pos->c_str() ) );
 }
+
+
+make_joined_command::make_joined_command(){
+  name = "mk_join";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_joined_command::execute( g * graph, vector<string> args ){
+}
+
+void make_joined_command::execute( g * graph, vector<g*> args){
+  graph->join_graphs( args.size(), args );
+}
+
 
 
 make_circ_command::make_circ_command(){
@@ -221,6 +248,27 @@ void print_sparse_command::execute( g * graph, vector<string> args){
 }
 
 
+print_sdpa_command::print_sdpa_command(){
+  name = "printf_sdp";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void print_sdpa_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  string filename = *pos;
+  ofstream sparseH (filename.c_str());
+  if( sparseH.is_open() ){
+    graph->print_sdpa( &sparseH );
+  }
+  else{
+    throw "Error opening file " + filename;
+  }
+}
+
+
 print_rudy_command::print_rudy_command(){
   name = "printf_rh";
   GraphCommandBase::base().register_c( name, this );
@@ -266,13 +314,16 @@ remove_edge_command removeEdgeCommand;
 add_edge_command addEdgeCommand;
 add_circ_edge_command addCircEdgeCommand;
 remove_circ_edge_command removeCircEdgeCommand;
+remove_rand_vs_command removeRandVsCommand;
 make_res_circ_command makeResCircCommand;
 make_circ_command makeCircCommand;
 make_embedded_rc_command makeEmbeddedRCCommand;
+make_joined_command makeJoinedCommand;
 add_all_noncrit_command addAllNonCritCommand;
 remove_k_command removeKCommand;
 count_k_command countKCommand;
 print_sparse_command printSparseCommand;
+print_sdpa_command printSDPACommand;
 print_command printCommand;
 print_rudy_command printRudyCommand;
 print_sat_command printSatCommand;
