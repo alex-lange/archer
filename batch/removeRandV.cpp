@@ -14,7 +14,6 @@ int main( int argc, char *argv[] ){
   filename.append("_");
   filename.append(argv[4]);
 
-  cout << filename << endl;
   cout << "create " << name << " " << argv[1] << endl;
   cout << "mk_rc " << name << " " << argv[2] << endl;
   cout << "remove_vs_rand " << name << " " << argv[3] << endl;
