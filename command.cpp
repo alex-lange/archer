@@ -29,7 +29,7 @@ void GraphCommandBase::split( string &line, char delim, vector<string> &parts ){
 GraphCommand * GraphCommandBase::lookup_command( const string & c ){
   c_map::iterator it = cmdMap.find(c);
   if( it == cmdMap.end() ){
-    throw "Error: Invalid Command";
+    throw "Error: Invalid Command " + c;
   }
   return it->second;
 }

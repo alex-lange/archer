@@ -11,5 +11,6 @@ do
     for t in 1 2 3 4 5
     do
 	./removeRandV ${n} ${r} ${v} ${t} | /home/alex/research/archer/archer
+	sleep 2
     done
 done

@@ -22,6 +22,7 @@ int main( int argc, char *argv[] ){
   cout << "printf_sh " << name << " " << filename << ".eig" << endl;
   cout << "printf_rh " << name << " " << filename << ".rdy" << endl;
   cout << "printf_sdp " << name << " " << filename << ".dat-s" << endl;
+  cout << "printf_sat " << name << " " << filename << ".sat" << endl;
   cout << "exit" << endl;
 
 }
