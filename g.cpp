@@ -3,11 +3,19 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <time.h>
+//#include <NTL>
+#include <gf2x.h>
+#include <NTL/vec_ZZ_pE.h>
+#include <NTL/ZZ_pXFactoring.h>
+#include <NTL/ZZ_pE.h>
+#include <NTL/ZZ_pEX.h>
+
 
 #include "g.h"
 #include "number_algorithms.h"
 
 using namespace std;
+using namespace NTL;
 
 g::g( int vsize ) :
   n( vsize )
@@ -127,6 +135,16 @@ void g::remove_randvs( int num ){
   remove_vs( vs, num );
 }
 
+void g::make_circ( vector<int> dists ){
+  int x;
+  for( int v = 0; v < n; v++ ){
+    for( vector<int>::iterator it = dists.begin(); it < dists.end(); it++ ){
+      x = ( v + *it ) % n;
+      add_edge( v, x );
+    }
+  }
+}
+
 void g::make_residue_circ( int r ){
   vset R(arraySize,0);
   int64_t rth;
@@ -144,14 +162,45 @@ void g::make_residue_circ( int r ){
   }
 }
 
-void g::make_circ( vector<int> dists ){
-  int x;
-  for( int v = 0; v < n; v++ ){
-    for( vector<int>::iterator it = dists.begin(); it < dists.end(); it++ ){
-      x = ( v + *it ) % n;
-      add_edge( v, x );
-    }
-  }
+void g::make_galois_circ( int p, int n ){
+  // define GF(p)
+  ZZ_p::init(to_ZZ(p));
+
+  // build irreducible polynomial P of degree n over GF(P)
+  ZZ_pX poly;
+  BuildIrred(poly, n);
+
+  // define GF(p^n), which is built around the irreducible poly
+  ZZ_pE::init(poly);
+
+  cout << "Created GF(" << p << "^" << n << ") with irreducible polynomial ";
+  cout << poly << endl;  
+  cout << "Cardinality = " << ZZ_pE::cardinality() << endl;
+  cout << "Degree = " << ZZ_pE::degree() << endl;
+  cout << "Modulus = " << ZZ_pE::modulus() << endl;
+
+  /*ZZ_pE f;
+  f = 5;
+  cout << f << endl;
+  random(f);
+  cout << f << endl;
+  cout << power( f, 5 ) << endl;
+  ZZ_pX h(1,1);*/
+
+  
+  ZZ_pEX g;
+  random(g,1);
+  cout << g << endl;
+  cout << power(g,2) << endl;
+  g.rep[0]=1;
+  cout << g << endl;
+  
+  ZZ_pEX f;
+  SetX(f);
+  cout << f << endl;
+  cout << power(f,10) << endl;
+  // random(f,1); 
+
 }
 
 void g::make_embedded_rc( int r, int num ){

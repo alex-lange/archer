@@ -26,6 +26,8 @@ class g {
   void remove_vs( vector<int> vs, int k );
   void remove_randvs( int num );
   void make_residue_circ( int r );
+  void make_galois_circ( int p, int n );
+  //void make_galois_circ( long p, long n );
   void make_circ( vector<int> dists );
   void make_embedded_rc( int r, int num = 2 );
   bool join_graphs( int num, vector<g*> graphs );

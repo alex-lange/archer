@@ -64,6 +64,16 @@ class make_circ_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+
+class make_galois_circ_command : public GraphCommand{
+ public:
+  make_galois_circ_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
 class make_embedded_rc_command : public GraphCommand{
  public:
   make_embedded_rc_command();

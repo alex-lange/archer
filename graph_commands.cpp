@@ -117,6 +117,19 @@ void make_joined_command::execute( g * graph, vector<g*> args){
 }
 
 
+make_galois_circ_command::make_galois_circ_command(){
+  name = "mk_gc";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_galois_circ_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 2 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_galois_circ( atoi(pos->c_str()),atoi((pos+1)->c_str()) );
+}
+
 
 make_circ_command::make_circ_command(){
   name = "mk_circ";
@@ -316,6 +329,7 @@ add_circ_edge_command addCircEdgeCommand;
 remove_circ_edge_command removeCircEdgeCommand;
 remove_rand_vs_command removeRandVsCommand;
 make_res_circ_command makeResCircCommand;
+make_galois_circ_command makeGaloisCircCommand;
 make_circ_command makeCircCommand;
 make_embedded_rc_command makeEmbeddedRCCommand;
 make_joined_command makeJoinedCommand;
