@@ -1,5 +1,7 @@
 #include <iostream>
+#include <sstream>
 #include <vector>
+#include <map>
 #include <algorithm>
 #include <stdlib.h>
 #include <time.h>
@@ -42,10 +44,16 @@ g::~g(){
   }
 
   delete[] edges;
+  k4s.clear();
 }
 
 int g::size(){
   return n;
+}
+
+int g::num_edges(){
+  recalc_edges();
+  return numEdges;
 }
 
 void g::add_edge( int u, int v ){
@@ -162,7 +170,48 @@ void g::make_residue_circ( int r ){
   }
 }
 
-void g::make_galois_circ( int p, int n ){
+struct g::compZZ_pE{
+  bool operator() (const ZZ_pE& left, const ZZ_pE& right) const
+  {
+    string sleft, sright;
+    ostringstream loss, ross;
+    loss << left;
+    sleft = loss.str();
+    sleft = sleft.substr(1,sleft.length()-2);
+    ross << right;
+    sright = ross.str();
+    sright = sright.substr(1,sright.length()-2);
+    istringstream liss(sleft,istringstream::in);
+    istringstream riss(sright,istringstream::in);
+
+    //  cout << "Comparing " << sleft << " and " << sright << endl;
+    
+    if( sleft.length() < sright.length() ){
+      //    cout << sleft << " is less degree, so it is less" << endl;
+      return true;
+    }
+    else if( sleft.length() == sright.length() ){
+      int degree = sleft.length() / 2 + 1;
+      int coeffs[2][degree];
+      for( int i = 0; i < degree; i++ ){
+	liss >> coeffs[0][i];
+	riss >> coeffs[1][i];
+      }
+      for( int i = degree-1; i >= 0; i-- ){
+	//	cout << "Comparing coeffs " << coeffs[0][i] << " and " << coeffs[1][i] << endl;
+	if( coeffs[0][i] < coeffs[1][i] ){
+	  return true;
+	}
+	else if( coeffs[0][i] > coeffs[1][i] ){
+	  return false;
+	}
+      }
+    }
+    return false;
+  }
+};
+
+void g::make_galois_circ( int p, int n, int r ){
   // define GF(p)
   ZZ_p::init(to_ZZ(p));
 
@@ -179,28 +228,56 @@ void g::make_galois_circ( int p, int n ){
   cout << "Degree = " << ZZ_pE::degree() << endl;
   cout << "Modulus = " << ZZ_pE::modulus() << endl;
 
-  /*ZZ_pE f;
-  f = 5;
-  cout << f << endl;
-  random(f);
-  cout << f << endl;
-  cout << power( f, 5 ) << endl;
-  ZZ_pX h(1,1);*/
-
+  vector< ZZ_pE > elements;
+    
+  ZZ_pE x;
+  string prim = "[ 1 1 ]";
+  istringstream iss( prim, istringstream::in);
+  iss >> x;
   
-  ZZ_pEX g;
-  random(g,1);
-  cout << g << endl;
-  cout << power(g,2) << endl;
-  g.rep[0]=1;
-  cout << g << endl;
-  
-  ZZ_pEX f;
-  SetX(f);
-  cout << f << endl;
-  cout << power(f,10) << endl;
-  // random(f,1); 
+  elements.push_back( x );
+  ZZ_pE y = power(x,2);
 
+  int count = 1;
+  while( x !=y ){
+    count++;
+    elements.push_back(y);
+    y = y * x;
+  }
+
+  cout << "Count = " << count << endl;
+
+  compZZ_pE comparePolys;
+  sort( elements.begin(), elements.end(), comparePolys );
+
+  map< ZZ_pE, bool, compZZ_pE > residues;
+  map< ZZ_pE, bool, compZZ_pE >::iterator res_it;
+
+  for( vector< ZZ_pE >::iterator it = elements.begin(); 
+       it != elements.end(); it++ ){
+    // cout << power(*it,4) << endl;
+    residues[power(*it,r)] = true;
+    //cout << *it << endl;
+  }
+
+  int res_count = 0;
+  for( res_it = residues.begin(); res_it != residues.end(); res_it++ ){
+    //  cout << (*res_it).first << endl;
+    res_count++;
+  }
+  cout << "Num Residues = " << res_count << endl;
+
+  for( int i = 0; i < count; i++ ){
+    if( residues[elements[i]] == true ){
+      add_edge( 0, i+1 );
+    }
+    for( int j = i+1; j < count; j++ ){
+      if( (residues[elements[i] - elements[j]] == true) ||
+	  (residues[elements[j] - elements[i]] == true) ){
+	add_edge( i+1, j+1 );
+      }
+    }
+  }
 }
 
 void g::make_embedded_rc( int r, int num ){
@@ -389,6 +466,41 @@ void g::get_tris(){
   calcedTris = true;
 }
 
+void g::get_k4s(){
+  numK4s = 0;
+  k4s.clear();
+  int a, b, c, d, e, f;
+  for( int i = 0; i < n-3; i++ ){
+    for( int j = i; j < n-2; j++ ){
+      if( is_edge(i, j) ){
+	for( int k = j; k < n - 1; k++ ){
+	  if( is_edge(i,k) && is_edge(j,k) ){
+	    for( int l = k; l < n; l++ ){
+	      if( is_edge(i,l) && is_edge(j,l) && is_edge(k,l) ){
+		a = edges[i][j];
+		b = edges[i][k];
+		c = edges[i][l];
+		d = edges[j][k];
+		e = edges[j][l];
+		f = edges[k][l];
+		k4s.push_back( new int[6] );
+		k4s[numK4s][0] = a;
+		k4s[numK4s][1] = b;
+		k4s[numK4s][2] = c;
+		k4s[numK4s][3] = d;
+		k4s[numK4s][4] = e;
+		k4s[numK4s][5] = f;
+		numK4s++;
+		//cout << a << " " << b << " " << c << " " << d << " " << e << " " << f << endl;
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
+
 void g::recalc_edges(){
   numEdges = 0;
   for( int i = 0; i < n - 1; i++ ){
@@ -518,5 +630,24 @@ void g::print_sat( ostream *o ){
     c = tris[t][2];
     *o << a << " " << b << " " << c << " 0" << endl;
     *o << "-" << a << " -" << b << " -" << c << " 0" << endl;
+  }
+}
+
+void g::print_sat34( ostream *o ){
+  recalc_edges();
+  get_tris();
+  get_k4s();
+
+  *o << "c SAT reduction for arrowing (3,4)^e" << endl;
+  *o << "c" << endl;
+  *o << "p cnf " << numEdges << " " << numTris + numK4s << endl;
+  for( int t = 0; t < numTris; t++ ){
+    *o << tris[t][0] << " " << tris[t][1] << " " << tris[t][2] << " 0" << endl;
+  }
+
+  for( int s = 0; s < numK4s; s++ ){
+    *o << "-" << k4s[s][0] << " -" << k4s[s][1] << " -" << k4s[s][2]
+       << " -" << k4s[s][3] << " -" << k4s[s][4] << " -" << k4s[s][5]
+       << " 0" << endl;
   }
 }

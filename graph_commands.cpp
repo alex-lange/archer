@@ -9,6 +9,21 @@
 
 using namespace std;
 
+get_edges_command::get_edges_command(){
+  name = "num_e";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void get_edges_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+
+  cout << graph->num_edges( ) << endl;
+}
+
+
 remove_edge_command::remove_edge_command(){
   name = "remove_e";
   GraphCommandBase::base().register_c( name, this );
@@ -124,10 +139,11 @@ make_galois_circ_command::make_galois_circ_command(){
 
 void make_galois_circ_command::execute( g * graph, vector<string> args){
   vector<string>::iterator pos = args.begin() + 2;
-  if( pos + 2 != args.end() ){
+  if( pos + 3 != args.end() ){
     throw "Invalid argument number for " + name;
   }
-  graph->make_galois_circ( atoi(pos->c_str()),atoi((pos+1)->c_str()) );
+  graph->make_galois_circ( atoi(pos->c_str()),atoi((pos+1)->c_str()),
+			   atoi((pos+2)->c_str()));
 }
 
 
@@ -205,7 +221,7 @@ void remove_k_command::execute( g * graph, vector<string> args){
   }
   int k = atoi( pos->c_str() );
   int removed = graph->remove_k( k );
-  cout << "Removed " << removed << " K" << k << "'s" << endl;
+  cout << "Removed " << removed << " edges" << endl;
 }
 
 
@@ -323,6 +339,28 @@ void print_sat_command::execute( g * graph, vector<string> args){
   }
 }
 
+
+print_sat34_command::print_sat34_command(){
+  name = "printf_sat34";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void print_sat34_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  string filename = *pos;
+  ofstream sparseH (filename.c_str());
+  if( sparseH.is_open() ){
+    graph->print_sat34( &sparseH );
+  }
+  else{
+    throw "Error opening file " + filename;
+  }
+}
+
+get_edges_command getEdgesCommand;
 remove_edge_command removeEdgeCommand;
 add_edge_command addEdgeCommand;
 add_circ_edge_command addCircEdgeCommand;
@@ -341,3 +379,4 @@ print_sdpa_command printSDPACommand;
 print_command printCommand;
 print_rudy_command printRudyCommand;
 print_sat_command printSatCommand;
+print_sat34_command printSat34Command;

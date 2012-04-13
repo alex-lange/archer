@@ -18,6 +18,7 @@ class g {
 
  public:
   int size();
+  int num_edges();
   void add_edge( int u, int v );
   void add_circ_edge( int d );
   void remove_edge( int u, int v);
@@ -26,7 +27,7 @@ class g {
   void remove_vs( vector<int> vs, int k );
   void remove_randvs( int num );
   void make_residue_circ( int r );
-  void make_galois_circ( int p, int n );
+  void make_galois_circ( int p, int n, int r );
   //void make_galois_circ( long p, long n );
   void make_circ( vector<int> dists );
   void make_embedded_rc( int r, int num = 2 );
@@ -38,17 +39,24 @@ class g {
   void print_sparse_h( ostream * = &cout, bool isRudy = false );
   void print_sdpa( ostream * o = &cout );
   void print_sat( ostream * o = &cout );
+  void print_sat34( ostream * o = &cout );
   
+ public:
+  struct compZZ_pE;
+
  private:
   void count_tris();
   void get_tris();
+  void get_k4s();
   void recalc_edges();
  
  private:
   int n, arraySize, numEdges, oldN;
   int numTris;
+  int numK4s;
   int ** edges;
   int ** tris;
+  vector< int * > k4s;
   bool calcedTris;
   vector<vset> gA;
 

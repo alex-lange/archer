@@ -1,0 +1,1 @@
+g++ -o convertNauty /home/alex/software/nauty24r2/gtools.o ../g.o ../set_operations.o ../number_algorithms.o convertNauty.cpp -L/usr/lib -lntl -lm

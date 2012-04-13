@@ -5,6 +5,14 @@
 #include "command.h"
 #include "g.h"
 
+class get_edges_command : public GraphCommand{
+ public:
+  get_edges_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
 class remove_edge_command : public GraphCommand{
  public:
   remove_edge_command();
@@ -160,3 +168,13 @@ class print_sat_command : public GraphCommand{
  public:
   void execute( g * graph, vector<string> args);
 };
+
+
+class print_sat34_command : public GraphCommand{
+ public:
+  print_sat34_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
