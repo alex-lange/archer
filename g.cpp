@@ -528,15 +528,15 @@ vector<int> g::add_all_ce_rand( bool avoid, int k ){
   }
   for( int i = 0; i < n/2; i++ ){
     int d = p[i] + 1;
-    cout << "d = " << d;
+    //cout << "d = " << d;
     add_circ_edge( d );
     if( is_k() ){
       remove_circ_edge( d );
-      cout << "...NOT added" << endl;
+      //cout << "...NOT added" << endl;
     }
     else{
       dists.push_back( d );
-      cout << "...added" << endl;
+      //cout << "...added" << endl;
     }
   }
   return dists;

@@ -250,11 +250,24 @@ add_all_cer_command::add_all_cer_command(){
 void add_all_cer_command::execute( g * graph, vector<string> args){
   vector<string>::iterator pos = args.begin() + 2;
   int k = 4;
-  if( pos != args.end() ){
+  if( pos != args.end() && pos+2 != args.end() ){
     throw "Invalid argument number for " + name;
   }
+  
   vector<int> added = graph->add_all_ce_rand();
-  //cout << "Added distances " << added << endl;
+  
+  if( pos != args.end() ){
+    string filename = *pos;
+    string gname = *(pos+1);
+    fstream distLog;
+    distLog.open(filename.c_str(), fstream::in | fstream::out | fstream::app );
+    distLog << gname;
+    distLog << " - added distances: ";
+    for( vector<int>::iterator it = added.begin(); it != added.end(); it++ ){
+      distLog << *it << " ";
+    }
+    distLog << endl;
+  }
 }
 
 
