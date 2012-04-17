@@ -192,6 +192,23 @@ void make_embedded_rc_command::execute( g * graph, vector<string> args){
 }
 
 
+
+load_adj_command::load_adj_command(){
+  name = "ld_adj";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void load_adj_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  
+  graph->load_adj( *pos );
+}
+
+
+
 add_all_noncrit_command::add_all_noncrit_command(){
   name = "add_all";
   GraphCommandBase::base().register_c( name, this );
@@ -207,6 +224,38 @@ void add_all_noncrit_command::execute( g * graph, vector<string> args){
   cout << "Added " << added << " edges avoiding K" << k << endl;
 }
 
+
+
+add_all_ce_command::add_all_ce_command(){
+  name = "add_allce";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void add_all_ce_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  int k = 4;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  vector<int> added = graph->add_all_ce();
+  //cout << "Added distances " << added << endl;
+}
+
+
+add_all_cer_command::add_all_cer_command(){
+  name = "add_allcer";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void add_all_cer_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  int k = 4;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  vector<int> added = graph->add_all_ce_rand();
+  //cout << "Added distances " << added << endl;
+}
 
 
 remove_k_command::remove_k_command(){
@@ -370,8 +419,11 @@ make_res_circ_command makeResCircCommand;
 make_galois_circ_command makeGaloisCircCommand;
 make_circ_command makeCircCommand;
 make_embedded_rc_command makeEmbeddedRCCommand;
+load_adj_command loadAdjCommand;
 make_joined_command makeJoinedCommand;
 add_all_noncrit_command addAllNonCritCommand;
+add_all_ce_command addAllCECommand;
+add_all_cer_command addAllCERCommand;
 remove_k_command removeKCommand;
 count_k_command countKCommand;
 print_sparse_command printSparseCommand;

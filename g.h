@@ -31,10 +31,14 @@ class g {
   //void make_galois_circ( long p, long n );
   void make_circ( vector<int> dists );
   void make_embedded_rc( int r, int num = 2 );
+  void load_adj( string filename);
   bool join_graphs( int num, vector<g*> graphs );
   bool add_noncrit_edge( int v, bool avoid = true, int k = 4 );
   int remove_k( int k = 4, bool remove = true );
+  bool is_k( int k = 4 );
   int add_all_noncrit( bool avoid = true, int k = 4 );
+  vector<int> add_all_ce( bool avoid = true, int k = 4 );
+  vector<int> add_all_ce_rand( bool avoid = true, int k = 4 );
   void print( ostream * o = &cout );
   void print_sparse_h( ostream * = &cout, bool isRudy = false );
   void print_sdpa( ostream * o = &cout );
@@ -43,6 +47,7 @@ class g {
   
  public:
   struct compZZ_pE;
+  struct primTable;
 
  private:
   void count_tris();

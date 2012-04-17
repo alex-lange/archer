@@ -91,6 +91,15 @@ class make_embedded_rc_command : public GraphCommand{
 };
 
 
+class load_adj_command : public GraphCommand{
+ public:
+  load_adj_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
 class make_joined_command : public GraphCommand{
  public:
   make_joined_command();
@@ -109,6 +118,22 @@ class add_all_noncrit_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+
+class add_all_ce_command : public GraphCommand{
+ public:
+  add_all_ce_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+class add_all_cer_command : public GraphCommand{
+ public:
+  add_all_cer_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
 
 class remove_k_command : public GraphCommand{
  public:

@@ -1,11 +1,13 @@
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <map>
 #include <algorithm>
 #include <stdlib.h>
 #include <time.h>
 //#include <NTL>
+#include <utility>
 #include <gf2x.h>
 #include <NTL/vec_ZZ_pE.h>
 #include <NTL/ZZ_pXFactoring.h>
@@ -211,6 +213,14 @@ struct g::compZZ_pE{
   }
 };
 
+//struct g::primTable{
+//  static map<pair<int,int>,string> gen_table(){
+//    map<pair<int,int>,string> t;
+//    t[(3,6)] = "[ 1 1 ]";
+//  }
+  
+//};
+
 void g::make_galois_circ( int p, int n, int r ){
   // define GF(p)
   ZZ_p::init(to_ZZ(p));
@@ -231,7 +241,16 @@ void g::make_galois_circ( int p, int n, int r ){
   vector< ZZ_pE > elements;
     
   ZZ_pE x;
-  string prim = "[ 1 1 ]";
+  string prim;
+  if( p == 7 && n == 3 ){
+    prim = "[ 1 1 1 ]";
+  }
+  else if( p == 23 && n == 2 ){
+    prim = "[ 10 1 ]";
+  }
+  else{
+    prim = "[ 1 1 ]";
+  }
   istringstream iss( prim, istringstream::in);
   iss >> x;
   
@@ -260,20 +279,38 @@ void g::make_galois_circ( int p, int n, int r ){
     //cout << *it << endl;
   }
 
+  string neg = "[ -1 ]";
+  string one = "[ 1 ]";
+
+  istringstream nss( neg, istringstream::in );
+  ZZ_pE negp;
+  nss >> negp;
+  cout << "-1 = " << negp << " and is ";
+  if( residues[negp] != true ){
+    cout << "NOT ";
+  }
+  cout << "a residue" << endl;
+
   int res_count = 0;
+  // cout << "*** RESIDUES ****" << endl;
   for( res_it = residues.begin(); res_it != residues.end(); res_it++ ){
-    //  cout << (*res_it).first << endl;
+    //cout << "  " << (*res_it).first << endl;
     res_count++;
   }
   cout << "Num Residues = " << res_count << endl;
 
   for( int i = 0; i < count; i++ ){
     if( residues[elements[i]] == true ){
+      //  cout << elements[i] << " is a residue so add edge " << 0 << " " << i+1 << endl;
       add_edge( 0, i+1 );
     }
     for( int j = i+1; j < count; j++ ){
-      if( (residues[elements[i] - elements[j]] == true) ||
-	  (residues[elements[j] - elements[i]] == true) ){
+      if( (residues[elements[i] - elements[j]] == true) ){
+	//	cout << elements[i] << " - " << elements[j] << " = " << elements[i] - elements[j] << " so add edge " << i+1 << " " << j+1 << endl;
+	add_edge( i+1, j+1 );
+      }
+      else if( (residues[elements[j] - elements[i]] == true) ){
+	//	cout << elements[j] << " - " << elements[i] << " = " << elements[j] - elements[i] << " so add edge " << i+1 << " " << j+1 << endl;
 	add_edge( i+1, j+1 );
       }
     }
@@ -308,6 +345,26 @@ void g::make_embedded_rc( int r, int num ){
   for( int i = 0; i < num; i++ ){
     delete subgraphs[i];
   }
+}
+
+void g::load_adj( string filename ){
+  string line;
+  ifstream ifs( filename.c_str(), ifstream::in );
+  int i = 0;
+  while( ifs.good() && i < n ){
+    getline( ifs, line );
+    //    cout << line << endl;
+    if( line.length() != n ){
+      throw "Error: Conflicting sizes";
+    }
+    for( int j = i; j < n; j++ ){
+      if( line[j] == '1' ){
+	add_edge(i,j);
+      }
+    }
+    i++;
+  }
+  ifs.close();
 }
 
 bool g::join_graphs( int num, vector<g*> graphs ){
@@ -366,6 +423,33 @@ int g::remove_k( int k, bool remove ){
   return numK;
 }
 
+bool g::is_k( int k ){
+  switch(k){
+  case 4:{
+    for( int i = 0; i < n-3; i++ ){
+      for( int j = i; j < n-2; j++ ){
+	if( is_edge(i, j) ){
+	  for( int k = j; k < n - 1; k++ ){
+	    if( is_edge(i,k) && is_edge(j,k) ){
+	      for( int l = k; l < n; l++ ){
+		if( is_edge(i,l) && is_edge(j,l) && is_edge(k,l) ){
+		  return true;
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    
+    break;
+  }
+  default:
+    cout << "Error: Counting/Removing K" << k << " is not supported" << endl;
+  }
+  return false;
+}
+
 bool g::add_noncrit_edge( int v, bool avoid, int k ){
   bool canAdd;
   for( int i = v+1; i < n - 2; i++ ){
@@ -413,6 +497,49 @@ int g::add_all_noncrit( bool avoid, int k ){
     }
   }
   return edgesAdded;
+}
+
+vector<int> g::add_all_ce( bool avoid, int k ){
+  vector<int> dists;
+  for( int d = 1; d <= n/2; d++ ){
+    cout << "d = " << d;
+    add_circ_edge( d );
+    if( is_k() ){
+      remove_circ_edge( d );
+      cout << "...NOT added" << endl;
+    }
+    else{
+      dists.push_back( d );
+      cout << "...added" << endl;
+    }
+  }
+  return dists;
+}
+
+vector<int> g::add_all_ce_rand( bool avoid, int k ){
+  vector<int> dists;
+  srand((unsigned)time(0));
+  int p[n/2];
+  for( int i = 0; i < n/2; i++ ){
+    int j = rand() % (i+1);
+    //cout << j << endl;
+    p[i] = p[j];
+    p[j] = i;
+  }
+  for( int i = 0; i < n/2; i++ ){
+    int d = p[i] + 1;
+    cout << "d = " << d;
+    add_circ_edge( d );
+    if( is_k() ){
+      remove_circ_edge( d );
+      cout << "...NOT added" << endl;
+    }
+    else{
+      dists.push_back( d );
+      cout << "...added" << endl;
+    }
+  }
+  return dists;
 }
 
 void g::count_tris(){
