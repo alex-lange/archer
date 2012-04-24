@@ -89,11 +89,8 @@ int main( int argc, char *argv[] ){
       cout << "Error opening " << filename << endl;
     }
     
-
     free(inG);
     delete nautg;
   }
   delete inG;
-
-
 }
