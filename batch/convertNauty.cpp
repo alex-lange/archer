@@ -1,4 +1,3 @@
-// g++ -o convertNauty /home/alex/software/nauty24r2/gtools.o convertNauty.cpp
 
 #include <iostream>
 #include <fstream>
@@ -45,26 +44,51 @@ int main( int argc, char *argv[] ){
       row = inG[i] >> (WORDSIZE - n );
       bit=((long long int)1<<(n-1));
       for( int j = 0; j < n; j++){
-	if( !(bit&row) ){
+	if( bit&row ){
+	  nautg->add_edge( i, j );
+	}
+	/*	if( !(bit&row) ){
 	  if( i != j ){
 	    nautg->add_edge( i, j );
 	  }
-	}
+	  }*/
 	bit >>= 1;
       }
     }
 
-    filename = "/home/alex/research/data/fe345/inverted/" + out.str() + ".sat";
+    filename = "/home/alex/research/data/fe335/tests/" + out.str() + ".eig";
     cout << filename << endl;
+    ofstream eigFile( filename.c_str() );
+    if( eigFile.is_open() ){
+      nautg->print_sparse_h( &eigFile );
+      eigFile.close();
+    }
+    else{
+      cout << "Error opening " << filename << endl;
+    }
 
+    filename = "/home/alex/research/data/fe335/tests/" + out.str() + ".sat";
+    cout << filename << endl;
     ofstream satFile( filename.c_str() );
     if( satFile.is_open() ){
-      nautg->print_sat34( &satFile );
+      nautg->print_sat( &satFile );
       satFile.close();
     }
     else{
       cout << "Error opening " << filename << endl;
     }
+
+    filename = "/home/alex/research/data/fe335/tests/" + out.str() + ".dat-s";
+    cout << filename << endl;
+    ofstream sdpFile( filename.c_str() );
+    if( sdpFile.is_open() ){
+      nautg->print_sdpa( &sdpFile );
+      sdpFile.close();
+    }
+    else{
+      cout << "Error opening " << filename << endl;
+    }
+    
 
     free(inG);
     delete nautg;
