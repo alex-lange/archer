@@ -216,11 +216,11 @@ add_all_noncrit_command::add_all_noncrit_command(){
 
 void add_all_noncrit_command::execute( g * graph, vector<string> args){
   vector<string>::iterator pos = args.begin() + 2;
-  int k = 4;
-  if( pos != args.end() ){
+  if( pos+1 != args.end() ){
     throw "Invalid argument number for " + name;
   }
-  int added = graph->add_all_noncrit();
+  int k = atoi( pos->c_str() );
+  int added = graph->add_all_noncrit(true,k);
   cout << "Added " << added << " edges avoiding K" << k << endl;
 }
 
@@ -249,12 +249,15 @@ add_all_cer_command::add_all_cer_command(){
 
 void add_all_cer_command::execute( g * graph, vector<string> args){
   vector<string>::iterator pos = args.begin() + 2;
-  int k = 4;
-  if( pos != args.end() && pos+2 != args.end() ){
+ 
+  if( pos+1 != args.end() && pos+3 != args.end() ){
     throw "Invalid argument number for " + name;
   }
+
+  int k = atoi( pos->c_str() );
+  pos++;
   
-  vector<int> added = graph->add_all_ce_rand();
+  vector<int> added = graph->add_all_ce_rand(true,k);
   
   if( pos != args.end() ){
     string filename = *pos;
@@ -268,6 +271,10 @@ void add_all_cer_command::execute( g * graph, vector<string> args){
     }
     distLog << endl;
   }
+  for( vector<int>::iterator it = added.begin(); it != added.end(); it++ ){
+    cout << *it << " ";
+  }
+  cout << endl;
 }
 
 
@@ -422,6 +429,27 @@ void print_sat34_command::execute( g * graph, vector<string> args){
   }
 }
 
+
+print_satv44_command::print_satv44_command(){
+  name = "printf_satv44";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void print_satv44_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  string filename = *pos;
+  ofstream sparseH (filename.c_str());
+  if( sparseH.is_open() ){
+    graph->print_satv44( &sparseH );
+  }
+  else{
+    throw "Error opening file " + filename;
+  }
+}
+
 get_edges_command getEdgesCommand;
 remove_edge_command removeEdgeCommand;
 add_edge_command addEdgeCommand;
@@ -445,3 +473,4 @@ print_command printCommand;
 print_rudy_command printRudyCommand;
 print_sat_command printSatCommand;
 print_sat34_command printSat34Command;
+print_satv44_command printSatV44Command;

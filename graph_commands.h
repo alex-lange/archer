@@ -203,3 +203,11 @@ class print_sat34_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+class print_satv44_command : public GraphCommand{
+ public:
+  print_satv44_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+

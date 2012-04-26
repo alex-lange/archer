@@ -33,10 +33,15 @@ g::g( int vsize ) :
   }
   numEdges = 0;
   edges = new int*[n];
+  inKs = new bool[n];
+  inTri = new bool[n];
+
   for( int i = 0; i < n; i++ ){
     edges[i] = new int[n];
+    inKs[i] = false;
+    inTri[i] = false;
   }
-  
+
   calcedTris = false;
 }
 
@@ -47,6 +52,9 @@ g::~g(){
 
   delete[] edges;
   k4s.clear();
+
+  delete[] inTri;
+  delete[] inKs;
 }
 
 int g::size(){
@@ -317,6 +325,8 @@ void g::make_galois_circ( int p, int n, int r ){
   }
 }
 
+
+
 void g::make_embedded_rc( int r, int num ){
   int subsize = n / num;
   vector< g* > subgraphs;
@@ -416,7 +426,34 @@ int g::remove_k( int k, bool remove ){
 	}
       }
     }
-    break; }
+    break; 
+  }
+  case 5:{
+    for( int i = 0; i < n-4; i++ ){
+      for( int j = i; j < n-3; j++ ){
+	if( is_edge(i, j) ){
+	  for( int k = j; k < n-2; k++ ){
+	    if( is_edge(i,k) && is_edge(j,k) ){
+	      for( int l = k; l < n-1; l++ ){
+		if( is_edge(i,l) && is_edge(j,l) && is_edge(k,l) ){
+		  for( int x = l; x < n; x++ ){
+		    if( is_edge(i,x) && is_edge(j,x) && is_edge(k,x)
+			&& is_edge(l,x) ){
+		      numK++;
+		      if(remove){
+			remove_edge(l,x);
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }  
+    }
+    break;
+  }
   default:
     cout << "Error: Counting/Removing K" << k << " is not supported" << endl;
   }
@@ -440,8 +477,30 @@ bool g::is_k( int k ){
 	  }
 	}
       }
+    }    
+    break;
+  }
+  case 5:{
+    for( int i = 0; i < n-4; i++ ){
+      for( int j = i; j < n-3; j++ ){
+	if( is_edge(i, j) ){
+	  for( int k = j; k < n-2; k++ ){
+	    if( is_edge(i,k) && is_edge(j,k) ){
+	      for( int l = k; l < n-1; l++ ){
+		if( is_edge(i,l) && is_edge(j,l) && is_edge(k,l) ){
+		  for( int x = l; x < n; x++ ){
+		    if( is_edge(i,x) && is_edge(j,x) && is_edge(k,x)
+			&& is_edge(l,x) ){
+		      return true;   
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }  
     }
-    
     break;
   }
   default:
@@ -467,6 +526,23 @@ bool g::add_noncrit_edge( int v, bool avoid, int k ){
 		if( in_set( k, gA[v] ) && in_set( k, gA[i] ) 
 		    && in_set( k, gA[j] )){
 		  canAdd = false;
+		}
+	      }
+	    }
+	  }
+	  break;
+	}
+	case 5:{
+	  for( int j = 0; (j < n - 2) && canAdd; j++ ){
+	    if( is_edge(j,v) && is_edge(j,i) ){
+	      for( int k = j; (k < n-1) && canAdd; k++ ){
+		if( is_edge(k,v) && is_edge(k,i) && is_edge(k,j) ){
+		  for( int l = k; (l < n) && canAdd; l++ ){
+		    if( is_edge(l,v) && is_edge(l,i) && is_edge(l,j)
+			&& is_edge(l,k) ){
+		      canAdd = false;
+		    }
+		  }
 		}
 	      }
 	    }
@@ -504,7 +580,7 @@ vector<int> g::add_all_ce( bool avoid, int k ){
   for( int d = 1; d <= n/2; d++ ){
     cout << "d = " << d;
     add_circ_edge( d );
-    if( is_k() ){
+    if( is_k(k) ){
       remove_circ_edge( d );
       cout << "...NOT added" << endl;
     }
@@ -530,7 +606,7 @@ vector<int> g::add_all_ce_rand( bool avoid, int k ){
     int d = p[i] + 1;
     //cout << "d = " << d;
     add_circ_edge( d );
-    if( is_k() ){
+    if( is_k( k ) ){
       remove_circ_edge( d );
       //cout << "...NOT added" << endl;
     }
@@ -557,7 +633,7 @@ void g::count_tris(){
   }
 }
 
-void g::get_tris(){
+void g::get_tris( bool vertex ){
   if( calcedTris ){
     for( int i = 0; i < numTris; i++ ){
       delete[] tris[i];
@@ -577,12 +653,19 @@ void g::get_tris(){
       if( in_set( ii, gA[i] ) ){
 	for( int iii = ii; iii < n; iii++ ){
 	  if( in_set( iii, gA[i] ) && in_set( iii, gA[ii] ) ){
-	    a = edges[i][ii];
-	    b = edges[i][iii];
-	    c = edges[ii][iii];
-	    tris[numTri][0] = a;
-	    tris[numTri][1] = b;
-	    tris[numTri][2] = c; 
+	    if( !vertex ){
+	      a = edges[i][ii];
+	      b = edges[i][iii];
+	      c = edges[ii][iii];
+	      tris[numTri][0] = a;
+	      tris[numTri][1] = b;
+	      tris[numTri][2] = c; 
+	    }
+	    else{
+	      tris[numTri][0] = i;
+	      tris[numTri][1] = ii;
+	      tris[numTri][2] = iii;
+	    }
 	    numTri++;
 	  }
 	} 
@@ -593,7 +676,7 @@ void g::get_tris(){
   calcedTris = true;
 }
 
-void g::get_k4s(){
+void g::get_k4s( bool vertex ){
   numK4s = 0;
   k4s.clear();
   int a, b, c, d, e, f;
@@ -604,19 +687,32 @@ void g::get_k4s(){
 	  if( is_edge(i,k) && is_edge(j,k) ){
 	    for( int l = k; l < n; l++ ){
 	      if( is_edge(i,l) && is_edge(j,l) && is_edge(k,l) ){
-		a = edges[i][j];
-		b = edges[i][k];
-		c = edges[i][l];
-		d = edges[j][k];
-		e = edges[j][l];
-		f = edges[k][l];
-		k4s.push_back( new int[6] );
-		k4s[numK4s][0] = a;
-		k4s[numK4s][1] = b;
-		k4s[numK4s][2] = c;
-		k4s[numK4s][3] = d;
-		k4s[numK4s][4] = e;
-		k4s[numK4s][5] = f;
+		if( !vertex ){
+		  a = edges[i][j];
+		  b = edges[i][k];
+		  c = edges[i][l];
+		  d = edges[j][k];
+		  e = edges[j][l];
+		  f = edges[k][l];
+		  k4s.push_back( new int[6] );
+		  k4s[numK4s][0] = a;
+		  k4s[numK4s][1] = b;
+		  k4s[numK4s][2] = c;
+		  k4s[numK4s][3] = d;
+		  k4s[numK4s][4] = e;
+		  k4s[numK4s][5] = f;
+		}
+		else{
+		  k4s.push_back( new int[4] );
+		  k4s[numK4s][0] = i + 1;
+		  k4s[numK4s][1] = j + 1;
+		  k4s[numK4s][2] = k + 1;
+		  k4s[numK4s][3] = l + 1;
+		  inKs[i]=true;
+		  inKs[j]=true;
+		  inKs[k]=true;
+		  inKs[l]=true;
+		}
 		numK4s++;
 		//cout << a << " " << b << " " << c << " " << d << " " << e << " " << f << endl;
 	      }
@@ -776,5 +872,31 @@ void g::print_sat34( ostream *o ){
     *o << "-" << k4s[s][0] << " -" << k4s[s][1] << " -" << k4s[s][2]
        << " -" << k4s[s][3] << " -" << k4s[s][4] << " -" << k4s[s][5]
        << " 0" << endl;
+  }
+}
+
+void g::print_satv44( ostream * o ){
+  int a, b, c, d;
+  int numVar = 0;
+  recalc_edges();
+  get_k4s( true );
+  for( int i = 0; i < n; i++ ){
+    if( inKs[i] ){
+      numVar++;
+    }
+  }
+
+  *o << "c SAT reduction for vertex arrowing " << endl;
+  *o << "c For arrowing (4,4)^v" << endl;
+  *o << "c" << endl;
+  *o << "p cnf " << numVar << " " << numK4s*2 << endl;
+
+  for( int t = 0; t < numK4s; t++ ){
+    a = k4s[t][0];
+    b = k4s[t][1];
+    c = k4s[t][2];
+    d = k4s[t][3];
+    *o << a << " " << b << " " << c << " " << d << " 0" << endl;
+    *o << "-" << a << " -" << b << " -" << c << " -" << d << " 0" << endl;
   }
 }

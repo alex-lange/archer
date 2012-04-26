@@ -44,6 +44,7 @@ class g {
   void print_sdpa( ostream * o = &cout );
   void print_sat( ostream * o = &cout );
   void print_sat34( ostream * o = &cout );
+  void print_satv44( ostream * o = &cout );
   
  public:
   struct compZZ_pE;
@@ -51,8 +52,8 @@ class g {
 
  private:
   void count_tris();
-  void get_tris();
-  void get_k4s();
+  void get_tris( bool vertex = false );
+  void get_k4s( bool vertex = false );
   void recalc_edges();
  
  private:
@@ -62,6 +63,9 @@ class g {
   int ** edges;
   int ** tris;
   vector< int * > k4s;
+  vector< int * > k4s_v;
+  bool * inTri;
+  bool * inKs;
   bool calcedTris;
   vector<vset> gA;
 
