@@ -59,7 +59,7 @@ void GraphCommandBase::run(){
 	    register_g( parts[1], new g( atoi( parts[2].c_str() ) ) );
 	  }
 	}
-	else if( parts[0] == "mk_join" ){
+	else if( parts[0] == "mk_join" || parts[0] == "mk_conn" ){
 	  vector<g*> graphs;
 	  while( parts.size() > 2 ){
 	    graphs.push_back( lookup_graph( parts[0], parts.back() ) );

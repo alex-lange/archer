@@ -130,7 +130,7 @@ void g::remove_vs( vector<int> cuts, int k ){
   // remove each vertex from the graph
   for( int j = 0; j < k; j++ ){
     x = cuts[j];
-    cout << "Removing " << x << "..." << endl;
+    //cout << "Removing " << x << "..." << endl;
     for( int i = 0; i < n; i++ ){
       if( i != x ){
 	set_cut( x, gA[i], arraySize );
@@ -144,6 +144,14 @@ void g::remove_vs( vector<int> cuts, int k ){
   recalc_edges();
 }
 
+void g::remove_distvs( int k, int d, int s ){
+  vector<int> vs;
+  for( int i = 0; i < k; i++ ){
+    vs.push_back( (s + i*d) % n );
+  }
+  remove_vs( vs, k );
+}
+
 void g::remove_randvs( int num ){
   vector<int> vs;
   srand((unsigned)time(0));
@@ -151,6 +159,18 @@ void g::remove_randvs( int num ){
     vs.push_back( rand() % n );
   }
   remove_vs( vs, num );
+}
+
+void g::make_cycle(){
+  add_circ_edge( 1 );
+}
+
+void g::make_complete(){
+  for( int i = 0; i < n-1; i++ ){
+    for( int j = i+1; j < n; j++ ){
+      add_edge(i,j);
+    }
+  }
 }
 
 void g::make_circ( vector<int> dists ){
@@ -403,6 +423,22 @@ bool g::join_graphs( int num, vector<g*> graphs ){
   return true;
 }
 
+int g::connect_graphs( g* g1, g* g2 ){
+  int edgesAdded = 0;
+  vector<g*> graphs;
+  graphs.push_back(g1);
+  graphs.push_back(g2);
+  join_graphs( 2, graphs);
+  
+  for( int i = 0; i < g1->size(); i++ ){
+    for( int j = g1->size(); j < n; j++ ){
+      add_edge(i,j);
+    }
+  }
+
+  return edgesAdded;
+}
+
 int g::remove_k( int k, bool remove ){
   int numK = 0;
   switch(k){
@@ -453,6 +489,38 @@ int g::remove_k( int k, bool remove ){
       }  
     }
     break;
+  }
+  case 6:{
+    for( int i = 0; i < n-5; i++ ){
+      for( int j = i; j < n-4; j++ ){
+	if( is_edge(i, j) ){
+	  for( int k = j; k < n-3; k++ ){
+	    if( is_edge(i,k) && is_edge(j,k) ){
+	      for( int l = k; l < n-2; l++ ){
+		if( is_edge(i,l) && is_edge(j,l) && is_edge(k,l) ){
+		  for( int x = l; x < n-1; x++ ){
+		    if( is_edge(i,x) && is_edge(j,x) && is_edge(k,x)
+			&& is_edge(l,x) ){
+		      for( int y = x; y < n; y++ ){
+			if( is_edge(i,y) && is_edge(j,y) && is_edge(k,y)
+			    && is_edge(l,y) && is_edge(x,y) ){
+			  numK++;
+			  if(remove){
+			    remove_edge(l,x);
+			  }
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }  
+    }
+    break;
+
   }
   default:
     cout << "Error: Counting/Removing K" << k << " is not supported" << endl;
@@ -665,6 +733,9 @@ void g::get_tris( bool vertex ){
 	      tris[numTri][0] = i;
 	      tris[numTri][1] = ii;
 	      tris[numTri][2] = iii;
+	      inTri[i] = true;
+	      inTri[ii] = true;
+	      inTri[iii] = true;
 	    }
 	    numTri++;
 	  }
@@ -672,7 +743,6 @@ void g::get_tris( bool vertex ){
       }
     }
   }
-
   calcedTris = true;
 }
 

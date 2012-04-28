@@ -46,6 +46,16 @@ class remove_circ_edge_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+
+class remove_dist_vs_command : public GraphCommand{
+ public:
+  remove_dist_vs_command();
+
+ public:
+  void execute( g * graph, vector<string> args );
+};
+
+
 class remove_rand_vs_command : public GraphCommand{
  public:
   remove_rand_vs_command();
@@ -58,6 +68,24 @@ class remove_rand_vs_command : public GraphCommand{
 class make_res_circ_command : public GraphCommand{
  public:
   make_res_circ_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
+class make_cyc_command : public GraphCommand{
+ public:
+  make_cyc_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
+class make_comp_command : public GraphCommand{
+ public:
+  make_comp_command();
 
  public:
   void execute( g * graph, vector<string> args);
@@ -103,6 +131,16 @@ class load_adj_command : public GraphCommand{
 class make_joined_command : public GraphCommand{
  public:
   make_joined_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+  void execute( g * graph, vector<g*> args);
+};
+
+
+class make_connected_command : public GraphCommand{
+ public:
+  make_connected_command();
 
  public:
   void execute( g * graph, vector<string> args);

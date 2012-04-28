@@ -77,6 +77,7 @@ void add_circ_edge_command::execute( g * graph, vector<string> args){
   graph->add_circ_edge( atoi( pos->c_str() ) );
 }
 
+
 remove_circ_edge_command::remove_circ_edge_command(){
   name = "remove_ce";
   GraphCommandBase::base().register_c( name, this );
@@ -91,6 +92,20 @@ void remove_circ_edge_command::execute( g * graph, vector<string> args){
 }
 
 
+remove_dist_vs_command::remove_dist_vs_command(){
+  name = "remove_vsd";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void remove_dist_vs_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 2 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->remove_distvs( atoi( pos->c_str() ), atoi( (pos+1)->c_str()) );
+}
+
+
 remove_rand_vs_command::remove_rand_vs_command(){
   name = "remove_vs_rand";
   GraphCommandBase::base().register_c( name, this );
@@ -102,6 +117,34 @@ void remove_rand_vs_command::execute( g * graph, vector<string> args){
     throw "Invalid argument number for " + name;
   }
   graph->remove_randvs( atoi( pos->c_str() ) );
+}
+
+
+make_cyc_command::make_cyc_command(){
+  name = "mk_cyc";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_cyc_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_cycle();
+}
+
+
+make_comp_command::make_comp_command(){
+  name = "mk_k";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_comp_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_complete();
 }
 
 
@@ -130,6 +173,20 @@ void make_joined_command::execute( g * graph, vector<string> args ){
 void make_joined_command::execute( g * graph, vector<g*> args){
   graph->join_graphs( args.size(), args );
 }
+
+
+make_connected_command::make_connected_command(){
+  name = "mk_conn";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_connected_command::execute( g * graph, vector<string> args ){
+}
+
+void make_connected_command::execute( g * graph, vector<g*> args){
+  graph->connect_graphs( args[1], args[0] );
+}
+
 
 
 make_galois_circ_command::make_galois_circ_command(){
@@ -455,13 +512,17 @@ remove_edge_command removeEdgeCommand;
 add_edge_command addEdgeCommand;
 add_circ_edge_command addCircEdgeCommand;
 remove_circ_edge_command removeCircEdgeCommand;
+remove_dist_vs_command removeDistVsCommand;
 remove_rand_vs_command removeRandVsCommand;
+make_cyc_command makeCycCommand;
+make_comp_command makeCompCommand;
 make_res_circ_command makeResCircCommand;
 make_galois_circ_command makeGaloisCircCommand;
 make_circ_command makeCircCommand;
 make_embedded_rc_command makeEmbeddedRCCommand;
 load_adj_command loadAdjCommand;
 make_joined_command makeJoinedCommand;
+make_connected_command makeConnectedCommand;
 add_all_noncrit_command addAllNonCritCommand;
 add_all_ce_command addAllCECommand;
 add_all_cer_command addAllCERCommand;
