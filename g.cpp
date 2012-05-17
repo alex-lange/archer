@@ -57,7 +57,7 @@ g::~g(){
   delete[] inKs;
 }
 
-int g::size(){
+int g::order(){
   return n;
 }
 
@@ -198,6 +198,27 @@ void g::make_residue_circ( int r ){
       }
     }
   }
+}
+
+
+// Makes the graph a random graph from Erdos-Renyi algorithm
+// @return the number of edges added
+int g::make_rand_er( float sigma ){
+  // set seed for random variable
+  srand((unsigned)time(0));
+  float r;
+
+  for( int x = 0; x < n - 1; x++ ){
+    for( int y = x + 1; y < n; y++ ){
+     
+      // Uses random value to determine if edge or not edge
+      r = rand() / (float)RAND_MAX;
+      if( r >= ( 1 - sigma )){
+	add_edge( x, y );
+      }
+    }
+  }
+  return numEdges;
 }
 
 struct g::compZZ_pE{
@@ -400,7 +421,7 @@ void g::load_adj( string filename ){
 bool g::join_graphs( int num, vector<g*> graphs ){
   int sum = 0;
   for( int i = 0; i < num; i++ ){
-    sum += graphs[i]->size();
+    sum += graphs[i]->order();
   }
   if( sum != n ){
     return false;
@@ -409,7 +430,7 @@ bool g::join_graphs( int num, vector<g*> graphs ){
   int start = 0;
   int end;
   while( current < num ){
-    end = graphs[current]->size();
+    end = graphs[current]->order();
     for( int i = 0; i < end - 1; i++ ){
       for( int j = i; j < end; j++ ){
 	if( graphs[current]->is_edge( i, j ) ){
@@ -430,8 +451,8 @@ int g::connect_graphs( g* g1, g* g2 ){
   graphs.push_back(g2);
   join_graphs( 2, graphs);
   
-  for( int i = 0; i < g1->size(); i++ ){
-    for( int j = g1->size(); j < n; j++ ){
+  for( int i = 0; i < g1->order(); i++ ){
+    for( int j = g1->order(); j < n; j++ ){
       add_edge(i,j);
     }
   }
@@ -808,6 +829,26 @@ void g::recalc_edges(){
 	edges[j][i] = 0;
       }
     }
+  }
+}
+
+void g::create_h( g * h ){
+  recalc_edges();
+  get_tris();
+
+  int a, b, c;
+  int j = 0;
+  string weight;
+
+  for( int t = 0; t < numTris; t++ ){
+    a = tris[t][0] - 1;
+    b = tris[t][1] - 1;
+    c = tris[t][2] - 1;
+
+    h->add_edge( a, b );
+    h->add_edge( a, c );
+    h->add_edge( b, c );
+
   }
 }
 

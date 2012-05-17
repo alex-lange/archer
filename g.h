@@ -17,7 +17,7 @@ class g {
   ~g();
 
  public:
-  int size();
+  int order();
   int num_edges();
   void add_edge( int u, int v );
   void add_circ_edge( int d );
@@ -34,6 +34,7 @@ class g {
   //void make_galois_circ( long p, long n );
   void make_circ( vector<int> dists );
   void make_embedded_rc( int r, int num = 2 );
+  int make_rand_er( float sigma );
   void load_adj( string filename);
   bool join_graphs( int num, vector<g*> graphs );
   int connect_graphs( g* g1, g* g2 );
@@ -43,6 +44,7 @@ class g {
   int add_all_noncrit( bool avoid = true, int k = 4 );
   vector<int> add_all_ce( bool avoid = true, int k = 4 );
   vector<int> add_all_ce_rand( bool avoid = true, int k = 4 );
+  void create_h( g * h );
   void print( ostream * o = &cout );
   void print_sparse_h( ostream * = &cout, bool isRudy = false);
   void print_sdpa( ostream * o = &cout );
