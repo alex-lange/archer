@@ -162,6 +162,20 @@ void make_res_circ_command::execute( g * graph, vector<string> args){
 }
 
 
+make_l_circ_command::make_l_circ_command(){
+  name = "mk_lc";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_l_circ_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_l_circ( atoi( pos->c_str() ) );
+}
+
+
 make_joined_command::make_joined_command(){
   name = "mk_join";
   GraphCommandBase::base().register_c( name, this );
@@ -517,6 +531,7 @@ remove_rand_vs_command removeRandVsCommand;
 make_cyc_command makeCycCommand;
 make_comp_command makeCompCommand;
 make_res_circ_command makeResCircCommand;
+make_l_circ_command makeLCircCommand;
 make_galois_circ_command makeGaloisCircCommand;
 make_circ_command makeCircCommand;
 make_embedded_rc_command makeEmbeddedRCCommand;

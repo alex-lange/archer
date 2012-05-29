@@ -74,6 +74,15 @@ class make_res_circ_command : public GraphCommand{
 };
 
 
+class make_l_circ_command : public GraphCommand{
+ public:
+  make_l_circ_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
 class make_cyc_command : public GraphCommand{
  public:
   make_cyc_command();

@@ -30,6 +30,7 @@ class g {
   void make_cycle();
   void make_complete();
   void make_residue_circ( int r );
+  void make_l_circ( int s );
   void make_galois_circ( int p, int n, int r );
   //void make_galois_circ( long p, long n );
   void make_circ( vector<int> dists );

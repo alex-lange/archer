@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # get all primes
-primes=`gawk 'BEGIN { RS="\n| " } ; {print $0 }' /home/alex/research/folkman/c++/primes/docs/low_primes.txt`
+primes=`gawk 'BEGIN { RS="\n| " } ; {print $0 }' /home/alex/research/folkman/c++/primes/docs/low_primes2.txt`
 data=/home/alex/research/data/all_cer/167
 sa=/home/alex/research/maxcut/sa
 

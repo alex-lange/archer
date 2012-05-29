@@ -200,6 +200,24 @@ void g::make_residue_circ( int r ){
   }
 }
 
+void g::make_l_circ( int s ){
+  cout << " s to 0 equals " << square_and_multiply( s, 0, n ) << endl;
+  vset R(arraySize,0);
+  int64_t rth;
+  for( int i = 0; i < n; i++ ){
+    rth = square_and_multiply( s, i, n );
+    set_insert( rth, R );
+  }
+
+  for( int v = 0; v < n; v++ ){
+    for( int x = v + 1; x < n; x++ ){
+      if( in_set( x - v, R ) ){
+	add_edge( v, x );
+      }
+    }
+  }
+}
+
 
 // Makes the graph a random graph from Erdos-Renyi algorithm
 // @return the number of edges added
