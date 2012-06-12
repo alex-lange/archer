@@ -66,6 +66,12 @@ int g::num_edges(){
   return numEdges;
 }
 
+int g::num_tris(){
+  recalc_edges();
+  get_tris();
+  return numTris;
+}
+
 void g::add_edge( int u, int v ){
   if( u < n && u >= 0 && v < n && v >= 0 ){
     numEdges++;
@@ -200,13 +206,16 @@ void g::make_residue_circ( int r ){
   }
 }
 
-void g::make_l_circ( int s ){
-  cout << " s to 0 equals " << square_and_multiply( s, 0, n ) << endl;
+bool g::make_l_circ( int s ){
   vset R(arraySize,0);
   int64_t rth;
   for( int i = 0; i < n; i++ ){
     rth = square_and_multiply( s, i, n );
     set_insert( rth, R );
+  }
+
+  if( !in_set( n - 1, R ) ){
+    return false;
   }
 
   for( int v = 0; v < n; v++ ){
@@ -216,6 +225,8 @@ void g::make_l_circ( int s ){
       }
     }
   }
+
+  return true;
 }
 
 
@@ -442,6 +453,7 @@ bool g::join_graphs( int num, vector<g*> graphs ){
     sum += graphs[i]->order();
   }
   if( sum != n ){
+    throw "Error: Orders of graphs do not sum to " + order();
     return false;
   }
   int current = 0;
@@ -462,16 +474,26 @@ bool g::join_graphs( int num, vector<g*> graphs ){
   return true;
 }
 
-int g::connect_graphs( g* g1, g* g2 ){
+int g::connect_graphs( g* g1, g* g2, bool avoid, int k ){
   int edgesAdded = 0;
   vector<g*> graphs;
   graphs.push_back(g1);
   graphs.push_back(g2);
-  join_graphs( 2, graphs);
+  bool joined = join_graphs( 2, graphs);
+  
   
   for( int i = 0; i < g1->order(); i++ ){
     for( int j = g1->order(); j < n; j++ ){
-      add_edge(i,j);
+      if( avoid ){
+	if( !causes_k( i, j, k ) ){
+	  add_edge(i,j);
+	  edgesAdded++;
+	}
+      }
+      else{
+	add_edge(i,j);
+	edgesAdded++;
+      }
     }
   }
 
@@ -616,6 +638,26 @@ bool g::is_k( int k ){
   return false;
 }
 
+bool g::causes_k( int u, int v, int k ){
+  switch(k){
+  case 4:{
+    for( int i = 0; i < n-1; i++ ){
+      if( is_edge( u, i ) && is_edge( v, i )){
+	for( int j = 0; j < n-1; j++ ){
+	  if( is_edge( u, j ) && is_edge( v, j ) && is_edge(i, j )){
+	    return true;
+	  }
+	}
+      }
+    }
+    break;
+  }
+  default:
+    cout << "Error: Counting/Removing K" << k << " is not supported" << endl;
+  }
+  return false;
+}
+
 bool g::add_noncrit_edge( int v, bool avoid, int k ){
   bool canAdd;
   for( int i = v+1; i < n - 2; i++ ){
@@ -686,14 +728,19 @@ vector<int> g::add_all_ce( bool avoid, int k ){
   vector<int> dists;
   for( int d = 1; d <= n/2; d++ ){
     cout << "d = " << d;
-    add_circ_edge( d );
-    if( is_k(k) ){
-      remove_circ_edge( d );
-      cout << "...NOT added" << endl;
+    if( is_edge( 0, d ) ){
+      cout << "...already exists" << endl;
     }
     else{
-      dists.push_back( d );
-      cout << "...added" << endl;
+      add_circ_edge( d );
+      if( is_k(k) ){
+	remove_circ_edge( d );
+	cout << "...NOT added" << endl;
+      }
+      else{
+	dists.push_back( d );
+	cout << "...added" << endl;
+      }
     }
   }
   return dists;

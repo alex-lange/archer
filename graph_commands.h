@@ -13,6 +13,16 @@ class get_edges_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+
+class order_command : public GraphCommand{
+ public:
+  order_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
 class remove_edge_command : public GraphCommand{
  public:
   remove_edge_command();
@@ -150,6 +160,16 @@ class make_joined_command : public GraphCommand{
 class make_connected_command : public GraphCommand{
  public:
   make_connected_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+  void execute( g * graph, vector<g*> args);
+};
+
+
+class make_avoid_connected_command : public GraphCommand{
+ public:
+  make_avoid_connected_command();
 
  public:
   void execute( g * graph, vector<string> args);

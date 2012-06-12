@@ -24,6 +24,21 @@ void get_edges_command::execute( g * graph, vector<string> args){
 }
 
 
+order_command::order_command(){
+  name = "order";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void order_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+
+  cout << graph->order() << endl;
+}
+
+
 remove_edge_command::remove_edge_command(){
   name = "remove_e";
   GraphCommandBase::base().register_c( name, this );
@@ -199,6 +214,20 @@ void make_connected_command::execute( g * graph, vector<string> args ){
 
 void make_connected_command::execute( g * graph, vector<g*> args){
   graph->connect_graphs( args[1], args[0] );
+}
+
+
+
+make_avoid_connected_command::make_avoid_connected_command(){
+  name = "mk_aconn";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_avoid_connected_command::execute( g * graph, vector<string> args ){
+}
+
+void make_avoid_connected_command::execute( g * graph, vector<g*> args){
+  cout << graph->connect_graphs( args[1], args[0], true, 4 ) << " edges added." << endl;
 }
 
 
@@ -522,6 +551,7 @@ void print_satv44_command::execute( g * graph, vector<string> args){
 }
 
 get_edges_command getEdgesCommand;
+order_command getOrderCommand;
 remove_edge_command removeEdgeCommand;
 add_edge_command addEdgeCommand;
 add_circ_edge_command addCircEdgeCommand;
@@ -538,6 +568,7 @@ make_embedded_rc_command makeEmbeddedRCCommand;
 load_adj_command loadAdjCommand;
 make_joined_command makeJoinedCommand;
 make_connected_command makeConnectedCommand;
+make_avoid_connected_command makeAvoidConnectedCommand;
 add_all_noncrit_command addAllNonCritCommand;
 add_all_ce_command addAllCECommand;
 add_all_cer_command addAllCERCommand;

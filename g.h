@@ -19,6 +19,7 @@ class g {
  public:
   int order();
   int num_edges();
+  int num_tris();
   void add_edge( int u, int v );
   void add_circ_edge( int d );
   void remove_edge( int u, int v);
@@ -30,7 +31,7 @@ class g {
   void make_cycle();
   void make_complete();
   void make_residue_circ( int r );
-  void make_l_circ( int s );
+  bool make_l_circ( int s );
   void make_galois_circ( int p, int n, int r );
   //void make_galois_circ( long p, long n );
   void make_circ( vector<int> dists );
@@ -38,10 +39,11 @@ class g {
   int make_rand_er( float sigma );
   void load_adj( string filename);
   bool join_graphs( int num, vector<g*> graphs );
-  int connect_graphs( g* g1, g* g2 );
+  int connect_graphs( g* g1, g* g2, bool avoid = false, int k = 4 );
   bool add_noncrit_edge( int v, bool avoid = true, int k = 4 );
   int remove_k( int k = 4, bool remove = true );
   bool is_k( int k = 4 );
+  bool causes_k( int u, int v, int k = 4 );
   int add_all_noncrit( bool avoid = true, int k = 4 );
   vector<int> add_all_ce( bool avoid = true, int k = 4 );
   vector<int> add_all_ce_rand( bool avoid = true, int k = 4 );

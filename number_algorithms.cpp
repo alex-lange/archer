@@ -11,3 +11,12 @@ int64_t square_and_multiply( uint64_t x, int64_t c, int64_t n ){
   }
   return z;
 }
+
+int gcd(int a, int b)
+{
+  if( b == 0 ){
+    return a;
+  }else{
+    return gcd( b, a % b );
+  }
+}
