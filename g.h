@@ -51,7 +51,7 @@ class g {
   void print( ostream * o = &cout );
   void print_sparse_h( ostream * = &cout, bool isRudy = false);
   void print_sdpa( ostream * o = &cout );
-  void print_sat( ostream * o = &cout );
+  void print_sat( ostream * o = &cout, bool weighted = false, int numWeighted = 0 );
   void print_sat34( ostream * o = &cout );
   void print_satv44( ostream * o = &cout );
   

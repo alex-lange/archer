@@ -39,6 +39,21 @@ void order_command::execute( g * graph, vector<string> args){
 }
 
 
+num_tri_command::num_tri_command(){
+  name = "numTris";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void num_tri_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+
+  cout << graph->num_tris() << endl;
+}
+
+
 remove_edge_command::remove_edge_command(){
   name = "remove_e";
   GraphCommandBase::base().register_c( name, this );
@@ -189,6 +204,7 @@ void make_l_circ_command::execute( g * graph, vector<string> args){
   }
   graph->make_l_circ( atoi( pos->c_str() ) );
 }
+
 
 
 make_joined_command::make_joined_command(){
@@ -509,6 +525,29 @@ void print_sat_command::execute( g * graph, vector<string> args){
 }
 
 
+print_wsat_command::print_wsat_command(){
+  name = "printf_wsat";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void print_wsat_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 2 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  int num = atoi(pos->c_str());
+  pos++;
+  string filename = *pos;
+  ofstream sparseH (filename.c_str());
+  if( sparseH.is_open() ){
+    graph->print_sat( &sparseH, true, num );
+  }
+  else{
+    throw "Error opening file " + filename;
+  }
+}
+
+
 print_sat34_command::print_sat34_command(){
   name = "printf_sat34";
   GraphCommandBase::base().register_c( name, this );
@@ -552,6 +591,7 @@ void print_satv44_command::execute( g * graph, vector<string> args){
 
 get_edges_command getEdgesCommand;
 order_command getOrderCommand;
+num_tri_command numTriCommand;
 remove_edge_command removeEdgeCommand;
 add_edge_command addEdgeCommand;
 add_circ_edge_command addCircEdgeCommand;
@@ -579,5 +619,6 @@ print_sdpa_command printSDPACommand;
 print_command printCommand;
 print_rudy_command printRudyCommand;
 print_sat_command printSatCommand;
+print_wsat_command printWSatCommand;
 print_sat34_command printSat34Command;
 print_satv44_command printSatV44Command;

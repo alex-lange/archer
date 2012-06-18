@@ -23,6 +23,16 @@ class order_command : public GraphCommand{
 };
 
 
+class num_tri_command : public GraphCommand{
+ public:
+  num_tri_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
+
 class remove_edge_command : public GraphCommand{
  public:
   remove_edge_command();
@@ -256,6 +266,15 @@ class print_rudy_command : public GraphCommand{
 class print_sat_command : public GraphCommand{
  public:
   print_sat_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
+class print_wsat_command : public GraphCommand{
+ public:
+  print_wsat_command();
 
  public:
   void execute( g * graph, vector<string> args);

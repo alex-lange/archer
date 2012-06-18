@@ -480,14 +480,15 @@ int g::connect_graphs( g* g1, g* g2, bool avoid, int k ){
   graphs.push_back(g1);
   graphs.push_back(g2);
   bool joined = join_graphs( 2, graphs);
-  
-  
+  cout << "Edges added: ";
+
   for( int i = 0; i < g1->order(); i++ ){
     for( int j = g1->order(); j < n; j++ ){
       if( avoid ){
 	if( !causes_k( i, j, k ) ){
 	  add_edge(i,j);
 	  edgesAdded++;
+	  cout << "(" << i << "," << j << ") ";
 	}
       }
       else{
@@ -496,6 +497,7 @@ int g::connect_graphs( g* g1, g* g2, bool avoid, int k ){
       }
     }
   }
+  cout << endl;
 
   return edgesAdded;
 }
@@ -1014,23 +1016,68 @@ void g::print_sdpa( ostream * o ){
   }
 }
 
-void g::print_sat( ostream *o ){
+void g::print_sat( ostream *o, bool weighted, int numWeighted ){
+  int top = 0;
   recalc_edges();
   get_tris();
 
   int a, b, c;
+
+  if( numWeighted > numTris ){
+    weighted = false;
+  }
+
+  if( weighted ){
+    top = 2 * ( numTris - numWeighted + 1 );
+  }
   
   *o << "c SAT reduction for arrowing triangles " << endl;
   *o << "c" << endl;
-  *o << "p cnf " << numEdges << " " << numTris*2 << endl;
+  *o << "p ";
+  if( weighted ){
+    *o << "w";
+  }
+  *o << "cnf " << numEdges << " " << numTris*2;
+  if( weighted ){
+    *o << " " << top;
+  }
+  *o << endl;
+
+  int numHard = 0;
+  int numSoft = 0;
+
   for( int t = 0; t < numTris; t++ ){
     a = tris[t][0];
     b = tris[t][1];
     c = tris[t][2];
+    if( weighted ){
+      if( numHard < numWeighted ){
+	*o << top;
+      }
+      else{
+	*o << "1";
+	numSoft++;
+      }
+      *o << " ";
+    }
     *o << a << " " << b << " " << c << " 0" << endl;
+
+    if( weighted ){
+      if( numHard < numWeighted ){
+	*o << top;
+	numHard++;
+      }
+      else{
+	*o << "1";
+      }
+      *o << " ";
+    }
     *o << "-" << a << " -" << b << " -" << c << " 0" << endl;
   }
+  cout << "Number of triangles hard = " << numHard << endl;
+  cout << "Number of triangles soft = " << numSoft << endl;
 }
+
 
 void g::print_sat34( ostream *o ){
   recalc_edges();
