@@ -85,6 +85,15 @@ class remove_rand_vs_command : public GraphCommand{
 };
 
 
+class make_complement_command : public GraphCommand{
+ public:
+  make_complement_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
 class make_res_circ_command : public GraphCommand{
  public:
   make_res_circ_command();
@@ -236,6 +245,16 @@ class print_command : public GraphCommand{
  public:
   void execute( g * graph, vector<string> args);
 };
+
+
+class printg6_command : public GraphCommand{
+ public:
+  printg6_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
 
 class print_sparse_command : public GraphCommand{
  public:

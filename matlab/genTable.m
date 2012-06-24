@@ -1,0 +1,34 @@
+function p = genTable()
+  p = zeros(12,3);
+  p(1,1)=127;
+  p(1,2)=3;
+  p(2,1)=281;
+  p(2,2)=4;
+  p(3,1)=313;
+  p(3,2)=4;
+  p(4,1)=337;
+  p(4,2)=4;
+  p(5,1)=353;
+  p(5,2)=4;
+  p(6,1)=457;
+  p(6,2)=4;
+  p(7,1)=541;
+  p(7,2)=5;
+  p(8,1)=571;
+  p(8,2)=5;
+  p(9,1)=701;
+  p(9,2)=5;
+  p(10,1)=769;
+  p(10,2)=6;
+  p(11,1)=937;
+  p(11,2)=6;
+  p(12,1)=941;
+  p(12,2)=5;
+  for i=1:12
+    g=genCircG(p(i,1), p(i,2));
+    [h,numEdges,numTris] = genSparseH(g);
+    alpha=3*numTris/2-min(eigs(h,6,'sa'))*numEdges/4;
+    beta = 2*numTris;
+    p(i,3)=(alpha-beta)/alpha;
+  end
+end

@@ -149,6 +149,19 @@ void remove_rand_vs_command::execute( g * graph, vector<string> args){
   graph->remove_randvs( atoi( pos->c_str() ) );
 }
 
+make_complement_command::make_complement_command(){
+  name = "mk_comp";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_complement_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_complement();
+}
+
 
 make_cyc_command::make_cyc_command(){
   name = "mk_cyc";
@@ -441,6 +454,21 @@ void print_command::execute( g * graph, vector<string> args){
 }
 
 
+
+printg6_command::printg6_command(){
+  name = "printg6";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void printg6_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->print_g6();
+}
+
+
 print_sparse_command::print_sparse_command(){
   name = "printf_sh";
   GraphCommandBase::base().register_c( name, this );
@@ -598,6 +626,7 @@ add_circ_edge_command addCircEdgeCommand;
 remove_circ_edge_command removeCircEdgeCommand;
 remove_dist_vs_command removeDistVsCommand;
 remove_rand_vs_command removeRandVsCommand;
+make_complement_command makeComplementCommand;
 make_cyc_command makeCycCommand;
 make_comp_command makeCompCommand;
 make_res_circ_command makeResCircCommand;
@@ -614,9 +643,10 @@ add_all_ce_command addAllCECommand;
 add_all_cer_command addAllCERCommand;
 remove_k_command removeKCommand;
 count_k_command countKCommand;
+print_command printCommand;
+printg6_command printg6Command;
 print_sparse_command printSparseCommand;
 print_sdpa_command printSDPACommand;
-print_command printCommand;
 print_rudy_command printRudyCommand;
 print_sat_command printSatCommand;
 print_wsat_command printWSatCommand;

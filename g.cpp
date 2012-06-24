@@ -24,6 +24,43 @@ using namespace NTL;
 g::g( int vsize ) :
   n( vsize )
 {
+  set_up();
+}
+
+g::g( const g &otherG ){
+  n = otherG.order();
+  set_up();
+  for( int i = 0; i < n; i++ ){
+    for( int j = 0; j < n; j++ ){
+      if( otherG.is_edge(i,j) ){
+	add_edge(i,j);
+      }
+    }
+  }
+}
+
+g::~g(){
+  for( int i = 0; i < oldN; i++ ){
+    delete[] edges[i];
+  }
+
+  delete[] edges;
+  k4s.clear();
+  ks.clear();
+
+  delete[] inTri;
+  delete[] inKs;
+  
+  for( int i = 0; i < n; i++ ){
+    for( int j = 0; j < n; j++ ){
+      delete[] isTri[i][j];
+    }
+    delete[] isTri[i];
+  }
+  delete[] isTri;
+}
+
+void g::set_up(){
   oldN = n;
   arraySize = n / intSize;
   if( ( n % intSize ) != 0 ) arraySize++;
@@ -35,29 +72,30 @@ g::g( int vsize ) :
   edges = new int*[n];
   inKs = new bool[n];
   inTri = new bool[n];
+  isTri = new bool**[n];
+  vdegree = new int[n];
 
   for( int i = 0; i < n; i++ ){
     edges[i] = new int[n];
     inKs[i] = false;
     inTri[i] = false;
+    vdegree[i] = 0;
+  }
+
+  for( int i = 0; i < n; i++ ){
+    isTri[i] = new bool*[n];
+    for( int j = 0; j < n; j++ ){
+      isTri[i][j] = new bool[n];
+    }
   }
 
   calcedTris = false;
+
 }
 
-g::~g(){
-  for( int i = 0; i < oldN; i++ ){
-    delete[] edges[i];
-  }
 
-  delete[] edges;
-  k4s.clear();
 
-  delete[] inTri;
-  delete[] inKs;
-}
-
-int g::order(){
+int g::order() const{
   return n;
 }
 
@@ -68,17 +106,21 @@ int g::num_edges(){
 
 int g::num_tris(){
   recalc_edges();
-  get_tris();
+  count_tris();
   return numTris;
 }
 
 void g::add_edge( int u, int v ){
   if( u < n && u >= 0 && v < n && v >= 0 ){
-    numEdges++;
-    set_insert( u, gA[v] );
-    set_insert( v, gA[u] );
-    edges[u][v] = numEdges;
-    edges[v][u] = numEdges;
+    if( !is_edge(u,v) ){
+      numEdges++;
+      set_insert( u, gA[v] );
+      set_insert( v, gA[u] );
+      edges[u][v] = numEdges;
+      edges[v][u] = numEdges;
+      vdegree[u]++;
+      vdegree[v]++;
+    }
   }
   else{
     cerr << "Error: Invalid vertices " << u << " and " << v << endl;
@@ -98,11 +140,15 @@ void g::add_circ_edge( int d ){
 void g::remove_edge( int u, int v ){
   if( u < n && u >= 0 && v < n && v >= 0
       && in_set(u, gA[v]) && in_set(v, gA[u]) ){
-    numEdges--;
-    set_delete( u, gA[v] );
-    set_delete( v, gA[u] );
-    edges[u][v] = 0;
-    edges[v][u] = 0;
+    if( is_edge(u,v) ){
+      numEdges--;
+      set_delete( u, gA[v] );
+      set_delete( v, gA[u] );
+      edges[u][v] = 0;
+      edges[v][u] = 0;
+      vdegree[u]--;
+      vdegree[v]--;
+    }
   }
 }
 
@@ -114,8 +160,18 @@ void g::remove_circ_edge( int d ){
   }
 }
 
-bool g::is_edge( int u, int v ){
+bool g::is_edge( int u, int v ) const{
   return in_set( u, gA[v] );
+}
+
+int g::min_degree(){
+  int min = n+1;
+  for( int i = 0; i < n; i++ ){
+    if( vdegree[i] < min ){
+      min = vdegree[i];
+    }
+  }
+  return min;
 }
 
 void g::remove_vs( vector<int> cuts, int k ){
@@ -165,6 +221,13 @@ void g::remove_randvs( int num ){
     vs.push_back( rand() % n );
   }
   remove_vs( vs, num );
+}
+
+void g::make_complement(){
+  for( int i = 0; i < n; i++ ){
+    gA[i]=set_complement( gA[i], arraySize );
+    remove_edge( i, i );
+  }
 }
 
 void g::make_cycle(){
@@ -634,10 +697,86 @@ bool g::is_k( int k ){
     }
     break;
   }
+  case 6:{
+    for( int i = 0; i < n-5; i++ ){
+      for( int j = i; j < n-4; j++ ){
+	if( is_edge(i, j) ){
+	  for( int k = j; k < n-3; k++ ){
+	    if( is_edge(i,k) && is_edge(j,k) ){
+	      for( int l = k; l < n-2; l++ ){
+		if( is_edge(i,l) && is_edge(j,l) && is_edge(k,l) ){
+		  for( int x = l; x < n-1; x++ ){
+		    if( is_edge(i,x) && is_edge(j,x) && is_edge(k,x)
+			&& is_edge(l,x) ){
+		      for( int y = x; y < n; y++ ){
+			if( is_edge(i,y) && is_edge(j,y) && is_edge(k,y)
+			    && is_edge(l,y) && is_edge(x,y) ){
+			  return true;   
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }  
+    }
+    break;
+  }
   default:
     cout << "Error: Counting/Removing K" << k << " is not supported" << endl;
   }
   return false;
+}
+
+vector<int*>* g::get_ks( int k ){
+  int count = 0;
+  switch(k){
+  case 5:{
+    for( int i = 0; i < n-4; i++ ){
+      for( int j = i; j < n-3; j++ ){
+	if( is_edge(i, j) ){
+	  for( int k = j; k < n-2; k++ ){
+	    if( is_edge(i,k) && is_edge(j,k) ){
+	      for( int l = k; l < n-1; l++ ){
+		if( is_edge(i,l) && is_edge(j,l) && is_edge(k,l) ){
+		  for( int x = l; x < n; x++ ){
+		    if( is_edge(i,x) && is_edge(j,x) && is_edge(k,x)
+			&& is_edge(l,x) ){
+		      ks.push_back(new int[5]);
+		      ks[count][0] = i;
+		      ks[count][1] = j;
+		      ks[count][2] = k;
+		      ks[count][3] = l;
+		      ks[count][4] = x;
+		      count++;
+		      // cout << i << " " << j << " " << k << " " << l << " " << x << endl;
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }  
+    }
+    
+    break;
+  }
+  case 6:{
+
+    break;
+  }
+
+  default:
+    cout << "Error: Counting/Removing K" << k << " is not supported" << endl;
+  }
+
+  //cout << "count = " << count << endl;
+  
+  return &ks;
 }
 
 bool g::causes_k( int u, int v, int k ){
@@ -919,6 +1058,9 @@ void g::create_h( g * h ){
   }
 }
 
+
+// Prints the adjacency matrix of the graph
+// @param o - the stream to print out to (default is standard out)
 void g::print( ostream * o ){
   uint64_t z;
   int count;
@@ -935,6 +1077,47 @@ void g::print( ostream * o ){
     *o << endl;
   }
 }
+
+
+// Prints the graph in g6 format for nauty
+// @param o - the stream to print out to (default is standard out)
+void g::print_g6( ostream *o ){
+  const int powers[] = {32,16,8,4,2,1};
+  vector<char> g6_string;
+  char start = 0;
+
+  if( n <= 62 ){
+    start = n+63;
+  }
+
+  g6_string.push_back( start );
+
+  int bitSize = n*(n-1)/2;
+  int count = 0;
+  int cur = 63;
+  int pow = 0;
+
+  for( int i = 0; i < n; i++ ){
+    for( int j = 0; j < i; j++ ){
+      pow = count % 6;
+      if( is_edge( j, i ) ){
+	cur = cur + powers[pow];
+      }
+      if( pow == 5 || j == n - 2 ){
+	g6_string.push_back( cur );
+	cur = 63; 
+      }
+      count++;
+    }
+  }
+  
+  for( vector<char>::iterator it = g6_string.begin(); it != g6_string.end();
+       it++ ){
+    *o << *it;
+  }
+  *o << endl;
+}
+
 
 void g::print_sparse_h( ostream * o, bool isRudy ){
   recalc_edges();

@@ -83,3 +83,11 @@ vset set_intersection( vset S, vset R, int arraySize){
   }
   return T;  
 }
+
+vset set_complement( vset S, int arraySize){
+  vset T( arraySize, 0 );
+  for( int i = 0; i < arraySize; i++ ){
+    T[i] = ~S[i];
+  }
+  return T;
+}

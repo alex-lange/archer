@@ -14,20 +14,23 @@ class g {
 
  public:
   g( int vsize );
+  g( const g &otherG );
   ~g();
 
  public:
-  int order();
+  int order() const;
   int num_edges();
   int num_tris();
   void add_edge( int u, int v );
   void add_circ_edge( int d );
   void remove_edge( int u, int v);
   void remove_circ_edge( int e );
-  bool is_edge( int u, int v );
+  bool is_edge( int u, int v ) const;
+  int min_degree();
   void remove_vs( vector<int> vs, int k );
   void remove_distvs( int k, int d, int s = 0 );
   void remove_randvs( int num );
+  void make_complement();
   void make_cycle();
   void make_complete();
   void make_residue_circ( int r );
@@ -44,11 +47,13 @@ class g {
   int remove_k( int k = 4, bool remove = true );
   bool is_k( int k = 4 );
   bool causes_k( int u, int v, int k = 4 );
+  vector<int *>* get_ks( int k );
   int add_all_noncrit( bool avoid = true, int k = 4 );
   vector<int> add_all_ce( bool avoid = true, int k = 4 );
   vector<int> add_all_ce_rand( bool avoid = true, int k = 4 );
   void create_h( g * h );
   void print( ostream * o = &cout );
+  void print_g6( ostream *o = &cout );
   void print_sparse_h( ostream * = &cout, bool isRudy = false);
   void print_sdpa( ostream * o = &cout );
   void print_sat( ostream * o = &cout, bool weighted = false, int numWeighted = 0 );
@@ -64,6 +69,7 @@ class g {
   void get_tris( bool vertex = false );
   void get_k4s( bool vertex = false );
   void recalc_edges();
+  void set_up();
  
  private:
   int n, arraySize, numEdges, oldN;
@@ -71,11 +77,14 @@ class g {
   int numK4s;
   int ** edges;
   int ** tris;
+  int * vdegree;
   vector< int * > k4s;
   vector< int * > k4s_v;
+  vector< int * > ks;
   bool * inTri;
   bool * inKs;
   bool calcedTris;
+  bool *** isTri;
   vector<vset> gA;
 
 };
