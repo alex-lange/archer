@@ -58,6 +58,7 @@ class add_circ_edge_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+
 class remove_circ_edge_command : public GraphCommand{
  public:
   remove_circ_edge_command();
@@ -81,6 +82,13 @@ class remove_rand_vs_command : public GraphCommand{
   remove_rand_vs_command();
 
  public:
+  void execute( g * graph, vector<string> args );
+};
+
+
+class k4_free_proc_command : public GraphCommand{
+ public:
+  k4_free_proc_command();
   void execute( g * graph, vector<string> args );
 };
 
@@ -148,6 +156,24 @@ class make_galois_circ_command : public GraphCommand{
 };
 
 
+class make_projective_plane_command : public GraphCommand{
+ public:
+  make_projective_plane_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
+class make_projective_plane_cut_command : public GraphCommand{
+ public:
+  make_projective_plane_cut_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
 class make_embedded_rc_command : public GraphCommand{
  public:
   make_embedded_rc_command();
@@ -189,8 +215,14 @@ class make_connected_command : public GraphCommand{
 class make_avoid_connected_command : public GraphCommand{
  public:
   make_avoid_connected_command();
+  void execute( g * graph, vector<string> args);
+  void execute( g * graph, vector<g*> args);
+};
 
+
+class make_avoid_rand_connected_command : public GraphCommand{
  public:
+  make_avoid_rand_connected_command();
   void execute( g * graph, vector<string> args);
   void execute( g * graph, vector<g*> args);
 };
@@ -232,6 +264,15 @@ class remove_k_command : public GraphCommand{
 class count_k_command : public GraphCommand{
  public:
   count_k_command();
+
+ public:
+  void execute( g * graph, vector<string> args);
+};
+
+
+class has_c_command : public GraphCommand{
+ public:
+  has_c_command();
 
  public:
   void execute( g * graph, vector<string> args);

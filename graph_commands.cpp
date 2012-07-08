@@ -149,6 +149,21 @@ void remove_rand_vs_command::execute( g * graph, vector<string> args){
   graph->remove_randvs( atoi( pos->c_str() ) );
 }
 
+
+k4_free_proc_command::k4_free_proc_command(){
+  name = "k4_free";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void k4_free_proc_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos  != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->k4_free_process();
+}
+
+
 make_complement_command::make_complement_command(){
   name = "mk_comp";
   GraphCommandBase::base().register_c( name, this );
@@ -256,7 +271,21 @@ void make_avoid_connected_command::execute( g * graph, vector<string> args ){
 }
 
 void make_avoid_connected_command::execute( g * graph, vector<g*> args){
-  cout << graph->connect_graphs( args[1], args[0], true, 4 ) << " edges added." << endl;
+  cout << graph->connect_graphs( args[1], args[0], true, false, 4 ) << " edges added." << endl;
+}
+
+
+
+make_avoid_rand_connected_command::make_avoid_rand_connected_command(){
+  name = "mk_arconn";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_avoid_rand_connected_command::execute( g * graph, vector<string> args ){
+}
+
+void make_avoid_rand_connected_command::execute( g * graph, vector<g*> args){
+  cout << graph->connect_graphs( args[1], args[0], true, true, 4 ) << " edges added." << endl;
 }
 
 
@@ -274,6 +303,35 @@ void make_galois_circ_command::execute( g * graph, vector<string> args){
   graph->make_galois_circ( atoi(pos->c_str()),atoi((pos+1)->c_str()),
 			   atoi((pos+2)->c_str()));
 }
+
+
+make_projective_plane_command::make_projective_plane_command(){
+  name = "mk_pp";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_projective_plane_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 2 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_projective_plane( atoi(pos->c_str()),atoi((pos+1)->c_str() ));
+}
+
+
+make_projective_plane_cut_command::make_projective_plane_cut_command(){
+  name = "mk_ppc";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_projective_plane_cut_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 2 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_projective_plane( atoi(pos->c_str()),atoi((pos+1)->c_str() ), true );
+}
+
 
 
 make_circ_command::make_circ_command(){
@@ -440,6 +498,27 @@ void count_k_command::execute( g * graph, vector<string> args){
 
 
 
+has_c_command::has_c_command(){
+  name = "has_c";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void has_c_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  int c = atoi( pos->c_str() );
+  bool has = graph->has_c( c );
+  cout << "Graph has ";
+  if( !has ){
+    cout << "NO ";
+  }
+  cout << "C" << c << endl;
+}
+
+
+
 print_command::print_command(){
   name = "print";
   GraphCommandBase::base().register_c( name, this );
@@ -447,10 +526,22 @@ print_command::print_command(){
 
 void print_command::execute( g * graph, vector<string> args){
   vector<string>::iterator pos = args.begin() + 2;
-  if( pos != args.end() ){
+  if( pos != args.end() && pos + 1 != args.end() ){
     throw "Invalid argument number for " + name;
   }
-  graph->print();
+  if( pos == args.end() ){
+    graph->print();
+  }
+  else{
+    string filename = *pos;
+    ofstream adj (filename.c_str());
+    if( adj.is_open() ){
+      graph->print( &adj );
+    }
+    else{
+      throw "Error opening file " + filename;
+    }
+  }
 }
 
 
@@ -462,10 +553,23 @@ printg6_command::printg6_command(){
 
 void printg6_command::execute( g * graph, vector<string> args){
   vector<string>::iterator pos = args.begin() + 2;
-  if( pos != args.end() ){
+ 
+  if( pos != args.end() && pos + 1 != args.end() ){
     throw "Invalid argument number for " + name;
   }
-  graph->print_g6();
+  if( pos == args.end() ){
+    graph->print_g6();
+  }
+  else{
+    string filename = *pos;
+    ofstream adj (filename.c_str());
+    if( adj.is_open() ){
+      graph->print_g6( &adj );
+    }
+    else{
+      throw "Error opening file " + filename;
+    }
+  }
 }
 
 
@@ -626,23 +730,28 @@ add_circ_edge_command addCircEdgeCommand;
 remove_circ_edge_command removeCircEdgeCommand;
 remove_dist_vs_command removeDistVsCommand;
 remove_rand_vs_command removeRandVsCommand;
+k4_free_proc_command k4FreeProcess;
 make_complement_command makeComplementCommand;
 make_cyc_command makeCycCommand;
 make_comp_command makeCompCommand;
 make_res_circ_command makeResCircCommand;
 make_l_circ_command makeLCircCommand;
 make_galois_circ_command makeGaloisCircCommand;
+make_projective_plane_command makeProjectivePlaneCommand;
+make_projective_plane_cut_command makeProjectivePlaneCutCommand;
 make_circ_command makeCircCommand;
 make_embedded_rc_command makeEmbeddedRCCommand;
 load_adj_command loadAdjCommand;
 make_joined_command makeJoinedCommand;
 make_connected_command makeConnectedCommand;
 make_avoid_connected_command makeAvoidConnectedCommand;
+make_avoid_rand_connected_command makeAvoidRandConnectedCommand;
 add_all_noncrit_command addAllNonCritCommand;
 add_all_ce_command addAllCECommand;
 add_all_cer_command addAllCERCommand;
 remove_k_command removeKCommand;
 count_k_command countKCommand;
+has_c_command hasCCommand;
 print_command printCommand;
 printg6_command printg6Command;
 print_sparse_command printSparseCommand;

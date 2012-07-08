@@ -60,7 +60,7 @@ void GraphCommandBase::run(){
 	  }
 	}
 	else if( parts[0] == "mk_join" || parts[0] == "mk_conn" || 
-		 parts[0] == "mk_aconn" ){
+		 parts[0] == "mk_aconn" || parts[0] == "mk_arconn" ){
 	  vector<g*> graphs;
 	  while( parts.size() > 2 ){
 	    graphs.push_back( lookup_graph( parts[0], parts.back() ) );

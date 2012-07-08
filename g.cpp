@@ -13,6 +13,7 @@
 #include <NTL/ZZ_pXFactoring.h>
 #include <NTL/ZZ_pE.h>
 #include <NTL/ZZ_pEX.h>
+#include <math.h>
 
 
 #include "g.h"
@@ -223,6 +224,47 @@ void g::remove_randvs( int num ){
   remove_vs( vs, num );
 }
 
+
+struct g::edge{
+  int u;
+  int v;
+};
+
+int g::k4_free_process(){
+  vector<edge> edges_in;
+  edge e;
+  
+  for( int i = 0; i < n; i++ ){
+    for( int j = i+1; j < n; j++ ){
+      e.u = i;
+      e.v = j;
+      edges_in.push_back( e );
+    }
+  }
+  return k4_free_process( edges_in );
+}
+
+int g::k4_free_process( vector<edge> edges_in ){
+  random_shuffle( edges_in.begin(), edges_in.end() );
+  int u, v;
+  int count = 0;
+  //  cout << "Added edges ";
+  for( vector<edge>::iterator it = edges_in.begin();
+       it != edges_in.end(); it++ ){
+    u = it->u;
+    v = it->v;
+    if( !is_edge(u,v) ){
+      if( !causes_k( u, v ) ){
+	add_edge( u, v );
+	count++;
+	//	cout << "(" << u << ", " << v << "), ";
+      }
+    }
+  }
+  cout << endl;
+  return count;
+}
+
 void g::make_complement(){
   for( int i = 0; i < n; i++ ){
     gA[i]=set_complement( gA[i], arraySize );
@@ -259,6 +301,16 @@ void g::make_residue_circ( int r ){
     rth = square_and_multiply( i, r, n );
     set_insert( rth, R );
   }
+  int num = 0;
+  cout << "Residues: ";
+  for( int i = 0; i < n; i++ ){
+    if( in_set( i, R ) ){
+      cout << i << " ";
+      num++;
+    }
+  }
+  cout << endl;
+  cout << "Count: " << num << endl;
 
   for( int v = 0; v < n; v++ ){
     for( int x = v + 1; x < n; x++ ){
@@ -459,6 +511,214 @@ void g::make_galois_circ( int p, int n, int r ){
 }
 
 
+struct g::gf_point{
+  ZZ_pE x;
+  ZZ_pE y;
+  ZZ_pE z;
+};
+
+
+void g::make_projective_plane( int p, int k, bool cut, string pr ){
+
+  int q = pow( p, k );
+  if( (q*q +q + 1 ) != n ){
+    cerr << "Error: invalid q for n" << endl;
+    return;
+  }
+   // define GF(p)
+  ZZ_p::init(to_ZZ(p));
+
+  // build irreducible polynomial P of degree n over GF(P)
+  ZZ_pX poly;
+  BuildIrred(poly, k);
+
+  // define GF(p^n), which is built around the irreducible poly
+  ZZ_pE::init(poly);
+
+  cout << "Created GF(" << p << "^" << k << ") with irreducible polynomial ";
+  cout << poly << endl;  
+  cout << "Cardinality = " << ZZ_pE::cardinality() << endl;
+  cout << "Degree = " << ZZ_pE::degree() << endl;
+  cout << "Modulus = " << ZZ_pE::modulus() << endl;
+
+  vector< ZZ_pE > elements;
+  vector< gf_point > points;
+  
+  ZZ_pE x, z, o;
+  string zero = "[ 0 ]";
+  string one = "[ 1 ]";
+  string prim;
+  if( p == 7 && k == 3 ){
+    prim = "[ 1 1 1 ]";
+  }
+  else if( p == 23 && k == 2 ){
+    prim = "[ 10 1 ]";
+  }
+  else if( p == 7 && k == 1 ){
+    prim = "[ 3 ]";
+  }
+  else if( k == 1 ){
+    prim = "[ 2 ]";
+  }
+  else{
+    prim = pr;
+  }
+  
+  istringstream iss1( zero, istringstream::in);
+  iss1 >> z;
+  elements.push_back(x);
+ 
+  istringstream iss2( prim, istringstream::in);
+  iss2 >> x;
+
+  istringstream iss3( one, istringstream::in);
+  iss3 >> o;
+  
+  elements.push_back( x );
+  ZZ_pE y = power(x,2);
+
+  int count = 2;
+  while( x !=y ){
+    count++;
+    elements.push_back(y);
+    y = y * x;
+  }
+
+  cout << "Count = " << count << endl;
+
+  for( vector< ZZ_pE >::iterator it = elements.begin(); it != elements.end(); it++ ){
+    //cout << *it << endl;
+  }
+
+  gf_point start;
+  start.x = o;
+  start.y = o;
+  start.z = o;
+  
+  //points.push_back( start );
+  for( int i = 0; i < count; i++ ){
+    gf_point copy = start;
+    copy.x = elements[i];
+    points.push_back( copy );
+    for( int j = 0; j < count; j++ ){
+      gf_point copy2 = copy;
+      if( !IsOne(elements[ j ]) ){
+	copy2.y = elements[j];
+	points.push_back( copy2 );
+      }
+    }
+  }
+
+  start.z = z;
+  for( int i = 0; i < count; i++ ){
+    gf_point copy = start;
+    copy.x = elements[i];
+    points.push_back( copy );
+  }
+
+  start.y = z;
+  points.push_back(start);
+  cout << points.size() << endl;
+
+  for( vector<gf_point>::iterator it = points.begin(); it != points.end(); it++ ){
+    for( vector<gf_point>::iterator it2 = it + 1; it2 != points.end(); it2++ ){
+      for( int i = 0; i < count ; i++ ){
+	//	if( !IsOne(elements[i] ) ){
+	  if( it->x == it2->x*elements[i] && it->y == it2->y*elements[i] &&
+	      it->z == it2->z*elements[i] ){
+	    cout << it->x << " " << it->y << " " << it->z << " and ";
+	    cout << it2->x << " " << it2->y << " " << it2->z;
+	    cout << " ARE EQUIVALENT!" << endl;
+	    //	  }
+	}
+      }
+    }
+  }
+
+  cout << "SIZE = " << points.size() << endl;
+
+  for( int i = 0; i < points.size(); i++ ){
+    cout << i << ": " << points[i].x << " " << points[i].y << " " << points[i].z << endl;
+    for( int j = 0; j < points.size(); j++ ){
+      if( i != j ){
+	if( IsZero( points[i].x * points[j].x + points[i].y * points[j].y + points[i].z * points[j].z ) ){
+	  //	  cout << points[i].x << " " << points[i].y << " " << points[i].z << " and ";
+	  //cout << points[j].x << " " << points[j].y << " " << points[j].z << " are edges" << endl;
+	  add_edge( i, j );
+	}
+	if( IsOne( points[i].x * points[j].x + points[i].y * points[j].y + points[i].z * points[j].z ) ){
+	  //	  cout << points[i].x << " " << points[i].y << " " << points[i].z << " and ";
+	  //cout << points[j].x << " " << points[j].y << " " << points[j].z << " are edges" << endl;
+	  // add_edge( i, j );
+	}
+      }
+    }
+    //    cout << endl;
+  }
+
+  
+  /*for( int i = 0; i < points.size(); i++ ){
+    cout << i << ": " << vdegree[i] << endl;
+    }*/
+
+  // if we want to cut out the absolute and hyperbolic vertices
+  if( cut ){
+    // Find absolute vertices
+    int absoluteNumber = 0;
+    vector<int> cuts;
+    bool cutThese[n];
+    for( int i = 0; i < n; i++ ){
+      cutThese[i] = false;
+    }
+
+    // find all absolute verticfes
+    for( int i = 0; i < n; i++ ){
+      if( vdegree[i] == q){
+	absoluteNumber++;
+	cuts.push_back( i );
+      }
+    }
+
+
+    if( absoluteNumber != q + 1 && p != 2){
+	cerr << "Error: graph did not generate correctly, "
+	     << "incorrect number of absolute vertices." << endl;
+    }
+
+    // find all vertices adjacent to absolute vertices (hyperbolic)
+    for( int i = 0; i < absoluteNumber; i++ ){
+      for( int j = 0; j < n; j++ ){
+	if( is_edge( cuts[i], j ) ){
+	  cutThese[j] = true;
+	}
+      }
+    }
+
+    // we do not want to cut the same vertex twice
+    for( int i = 0; i < absoluteNumber; i++ ){
+      cutThese[cuts[i]] = false;
+    }
+    
+    for( int i = 0; i < n; i++ ){
+      if( cutThese[i] ){
+	cuts.push_back(i );
+      }
+    }
+
+    if( p != 2 && (n - cuts.size()) != (q * (q-1) / 2) ){
+      cerr << "Error: graph did not generate correctly, "
+	   << "number of neither hyperbolic nor absolute is not correct"
+	   << endl;
+    }
+    
+    remove_vs( cuts, cuts.size() );
+
+  }
+
+  
+}
+
+
 
 void g::make_embedded_rc( int r, int num ){
   int subsize = n / num;
@@ -489,6 +749,7 @@ void g::make_embedded_rc( int r, int num ){
     delete subgraphs[i];
   }
 }
+
 
 void g::load_adj( string filename ){
   string line;
@@ -537,30 +798,43 @@ bool g::join_graphs( int num, vector<g*> graphs ){
   return true;
 }
 
-int g::connect_graphs( g* g1, g* g2, bool avoid, int k ){
+int g::connect_graphs( g* g1, g* g2, bool avoid, bool rand, int k ){
   int edgesAdded = 0;
   vector<g*> graphs;
   graphs.push_back(g1);
   graphs.push_back(g2);
   bool joined = join_graphs( 2, graphs);
+  vector<edge> edges_in;
+  edge e;
   cout << "Edges added: ";
 
   for( int i = 0; i < g1->order(); i++ ){
     for( int j = g1->order(); j < n; j++ ){
-      if( avoid ){
-	if( !causes_k( i, j, k ) ){
+      if( !rand ){
+	if( avoid ){
+	  if( !causes_k( i, j, k ) ){
+	    add_edge(i,j);
+	    edgesAdded++;
+	    cout << "(" << i << "," << j << ") ";
+	  }
+	}
+	else{
 	  add_edge(i,j);
 	  edgesAdded++;
-	  cout << "(" << i << "," << j << ") ";
 	}
       }
       else{
-	add_edge(i,j);
-	edgesAdded++;
+	e.u = i;
+	e.v = j;
+	edges_in.push_back( e );
       }
     }
   }
+  if( rand ){
+    edgesAdded = k4_free_process( edges_in );
+  }
   cout << endl;
+  cout << edges_in.size() << endl;
 
   return edgesAdded;
 }
@@ -731,6 +1005,46 @@ bool g::is_k( int k ){
   return false;
 }
 
+
+
+bool g::has_c( int c ){
+  switch(c){
+  case 4:{
+    for( int i = 0; i < n - 3; i++ ){
+      for( int j = i+1; j < n - 2; j++ ){
+	if( is_edge( i, j ) ){
+	  for( int k = j+1; k < n - 1; k++ ){
+	    if( is_edge( i, k ) ){
+	      for( int l = k+1; l < n; l++ ){
+		if( is_edge( j, l ) && is_edge( k, l ) ){
+		  cout << i << " " << j << " " << k << " " << l << endl;
+		  return true;
+		}
+	      }
+	    }
+	    else if( is_edge( j, k ) ){
+	      for( int l = k+1; l < n; l++ ){
+		if( is_edge( i, l ) && is_edge( k, l ) ){
+		  cout << i << " " << j << " " << k << " " << l << endl;
+		  return true;
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    return false;
+  }
+  default:
+    cerr << "Error: Counting/Removing C" << c << " is not supported" << endl;
+    return false;
+  }
+  
+
+}
+
+
 vector<int*>* g::get_ks( int k ){
   int count = 0;
   switch(k){
@@ -784,7 +1098,7 @@ bool g::causes_k( int u, int v, int k ){
   case 4:{
     for( int i = 0; i < n-1; i++ ){
       if( is_edge( u, i ) && is_edge( v, i )){
-	for( int j = 0; j < n-1; j++ ){
+	for( int j = 0; j < n; j++ ){
 	  if( is_edge( u, j ) && is_edge( v, j ) && is_edge(i, j )){
 	    return true;
 	  }
@@ -1064,14 +1378,18 @@ void g::create_h( g * h ){
 void g::print( ostream * o ){
   uint64_t z;
   int count;
+  bool go = true;
   for( int i = 0; i < n; i++ ){
     count = 0;
-    for( int j = 0; j < arraySize; j++ ){
+    go = true;
+    for( int j = 0; j < arraySize && go; j++ ){
       z = shifter << (intSize - 1);
-      for( ; z>0; z >>= 1 ){
+      for( ; z>0 && go; z >>= 1 ){
 	*o << (((gA[i][j] & z ) == z) ? " 1":" 0");
 	count ++;
-	if( count == n ) break;
+	if( count == n ){
+	  go = false;
+	}
       }		 
     }
     *o << endl;
