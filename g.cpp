@@ -66,8 +66,10 @@ void g::set_up(){
   arraySize = n / intSize;
   if( ( n % intSize ) != 0 ) arraySize++;
   gA.resize( n );
+  gB.resize( n );
   for( int i = 0; i < n; i++ ){
     gA[i].resize( arraySize, 0 );
+    gB[i].resize( arraySize, 0 );
   }
   numEdges = 0;
   edges = new int*[n];
@@ -81,6 +83,10 @@ void g::set_up(){
     inKs[i] = false;
     inTri[i] = false;
     vdegree[i] = 0;
+
+    for( int b = i + 1; b < n; b++ ){
+      set_insert( b, gB[i] );
+    }
   }
 
   for( int i = 0; i < n; i++ ){
@@ -90,7 +96,7 @@ void g::set_up(){
     }
   }
 
-  calcedTris = false;
+  beenModified = true;
 
 }
 
@@ -101,13 +107,12 @@ int g::order() const{
 }
 
 int g::num_edges(){
-  recalc_edges();
+  recount_data();
   return numEdges;
 }
 
 int g::num_tris(){
-  recalc_edges();
-  count_tris();
+  recount_data();
   return numTris;
 }
 
@@ -121,6 +126,7 @@ void g::add_edge( int u, int v ){
       edges[v][u] = numEdges;
       vdegree[u]++;
       vdegree[v]++;
+      beenModified = true;
     }
   }
   else{
@@ -149,6 +155,7 @@ void g::remove_edge( int u, int v ){
       edges[v][u] = 0;
       vdegree[u]--;
       vdegree[v]--;
+      beenModified = true;
     }
   }
 }
@@ -175,13 +182,106 @@ int g::min_degree(){
   return min;
 }
 
+
+void g::max_clique_backtrack( int l ){
+    // get new optimum value
+  if( l > optSize ){
+    optSize = l;
+    optClique = X;
+  }
+  
+  // calculates new tree level
+  if( l == 0 ){
+    gC[l] = gV;
+  }else{
+    // gets only the vertices we want
+    gC[l] = set_intersection( gC[l-1], set_intersection( gA[X[l-1]], gB[X[l-1]], arraySize ), arraySize);
+  }
+  vset cl = gC[l];
+
+  // Bounding/Tree Pruning
+  int m;
+  // m = greedy_color( C[l] ) + l;` (not implemented yet)
+  // m = sampling_bound( C[l] ) + l; (not implmented yet)
+  m = l + set_order( gC[l], arraySize );
+  
+  int x = first_bit( cl, arraySize );
+  while( x != -1 ){
+    // bound
+    if( m <= optSize ) return;
+    X[l] = x;
+    max_clique_backtrack( l + 1 );
+    set_delete( x, cl );
+    x = first_bit( cl, arraySize );
+  }
+}
+
+
+vector<int> g::max_clique(){
+  // set all global variables needed
+  // (only use them for max-clique, so no use putting them in set_up)
+  gC.resize( n + 1 );
+  gV.resize( arraySize );
+  for( int i = 0; i < arraySize; i++ ){
+    gV[i] = empty;
+  }
+  X.resize( n );
+ 
+  for( int i = 0; i < n+1; i++ ){
+    gC[i].resize( arraySize );
+    for( int j = 0; j < arraySize; j++ ){
+      gC[i][j] = empty;
+    }
+  }
+  for( int i = 0; i < n; i++ ){
+    X[i] = 0;
+    set_insert( i, gV );
+  }
+  optSize = 0;
+  
+  max_clique_backtrack( 0 );
+  cout << "Size: " << optSize << endl;
+  vector<int> realClique;
+  for( int i = 0; i < optSize; i++ ){
+    realClique.push_back( optClique[i] );
+  }
+
+  return realClique;
+}
+
+
+vector<int> g::max_independent_set(){
+  make_complement();
+  vector<int> realClique = max_clique();
+  make_complement();
+  return realClique;
+}
+
+
+void g::fix_data(){
+  recount_data();
+  arraySize = n / intSize;
+  if( ( n % intSize ) != 0 ) arraySize++;
+  gB.resize(n);
+  for( int i = 0; i < n; i++ ){
+    for( int j = 0; j < arraySize; j++ ){
+      gB[i][j] = empty;
+    }
+  }
+  for( int i = 0; i < n; i++ ){
+    for( int b = i + 1; b < n; b++ ){
+      set_insert( b, gB[i] );
+    }
+  }
+}
+
+
 void g::remove_vs( vector<int> cuts, int k ){
   int x;
   int removed = 0;
   
   // gets the array of cuts and sorts them
-  //int elements = sizeof(cuts) / sizeof(cuts[0]);
-  //cout << elements << endl;
+  // int elements = sizeof(cuts) / sizeof(cuts[0]);
   sort(cuts.begin(),cuts.end());
   cout << "Cuts: ";
   for( int i = 0; i < k; i++ ){
@@ -199,12 +299,17 @@ void g::remove_vs( vector<int> cuts, int k ){
 	set_cut( x, gA[i], arraySize );
 	if( i > x ){
 	  gA[i-1] = gA[i];
+	  vdegree[i-1] = vdegree[i];
 	}
       }
-    }  
+    }
     n--;
+    for( int i = 0; i < arraySize; i++ ){
+      gA[n][i] = empty;
+    }
   }
-  recalc_edges();
+  beenModified = true;
+  fix_data();
 }
 
 void g::remove_distvs( int k, int d, int s ){
@@ -241,16 +346,17 @@ int g::k4_free_process(){
       edges_in.push_back( e );
     }
   }
-  return k4_free_process( edges_in );
+  return k4_free_process( &edges_in );
 }
 
-int g::k4_free_process( vector<edge> edges_in ){
-  random_shuffle( edges_in.begin(), edges_in.end() );
+int g::k4_free_process( vector<edge>* edges_in ){
+  srand((unsigned)time(0));
+  random_shuffle( edges_in->begin(), edges_in->end() );
   int u, v;
   int count = 0;
   //  cout << "Added edges ";
-  for( vector<edge>::iterator it = edges_in.begin();
-       it != edges_in.end(); it++ ){
+  for( vector<edge>::iterator it = edges_in->begin();
+       it != edges_in->end(); it++ ){
     u = it->u;
     v = it->v;
     if( !is_edge(u,v) ){
@@ -261,7 +367,6 @@ int g::k4_free_process( vector<edge> edges_in ){
       }
     }
   }
-  cout << endl;
   return count;
 }
 
@@ -804,6 +909,9 @@ int g::connect_graphs( g* g1, g* g2, bool avoid, bool rand, int k ){
   graphs.push_back(g1);
   graphs.push_back(g2);
   bool joined = join_graphs( 2, graphs);
+  if( joined ){
+    cout << "Joined succesfully." << endl;
+  }
   vector<edge> edges_in;
   edge e;
   cout << "Edges added: ";
@@ -831,10 +939,8 @@ int g::connect_graphs( g* g1, g* g2, bool avoid, bool rand, int k ){
     }
   }
   if( rand ){
-    edgesAdded = k4_free_process( edges_in );
+    edgesAdded = k4_free_process( &edges_in );
   }
-  cout << endl;
-  cout << edges_in.size() << endl;
 
   return edgesAdded;
 }
@@ -1243,12 +1349,6 @@ void g::count_tris(){
 }
 
 void g::get_tris( bool vertex ){
-  if( calcedTris ){
-    for( int i = 0; i < numTris; i++ ){
-      delete[] tris[i];
-    }
-    delete[] tris;
-  }
   count_tris();
   tris = new int*[numTris];
   for( int i = 0; i < numTris; i++ ){
@@ -1284,7 +1384,6 @@ void g::get_tris( bool vertex ){
       }
     }
   }
-  calcedTris = true;
 }
 
 void g::get_k4s( bool vertex ){
@@ -1353,8 +1452,7 @@ void g::recalc_edges(){
 }
 
 void g::create_h( g * h ){
-  recalc_edges();
-  get_tris();
+  recount_data();
 
   int a, b, c;
   int j = 0;
@@ -1438,8 +1536,7 @@ void g::print_g6( ostream *o ){
 
 
 void g::print_sparse_h( ostream * o, bool isRudy ){
-  recalc_edges();
-  get_tris();
+  recount_data();
 
   int a, b, c;
   int j = 0;
@@ -1473,8 +1570,7 @@ void g::print_sparse_h( ostream * o, bool isRudy ){
 }
 
 void g::print_sdpa( ostream * o ){
-  recalc_edges();
-  get_tris();
+  recount_data();
 
   int a, b, c;
   int j = 0;
@@ -1519,8 +1615,7 @@ void g::print_sdpa( ostream * o ){
 
 void g::print_sat( ostream *o, bool weighted, int numWeighted ){
   int top = 0;
-  recalc_edges();
-  get_tris();
+  recount_data();
 
   int a, b, c;
 
@@ -1581,8 +1676,7 @@ void g::print_sat( ostream *o, bool weighted, int numWeighted ){
 
 
 void g::print_sat34( ostream *o ){
-  recalc_edges();
-  get_tris();
+  recount_data();
   get_k4s();
 
   *o << "c SAT reduction for arrowing (3,4)^e" << endl;
@@ -1602,7 +1696,7 @@ void g::print_sat34( ostream *o ){
 void g::print_satv44( ostream * o ){
   int a, b, c, d;
   int numVar = 0;
-  recalc_edges();
+  recount_data();
   get_k4s( true );
   for( int i = 0; i < n; i++ ){
     if( inKs[i] ){
@@ -1622,5 +1716,19 @@ void g::print_satv44( ostream * o ){
     d = k4s[t][3];
     *o << a << " " << b << " " << c << " " << d << " 0" << endl;
     *o << "-" << a << " -" << b << " -" << c << " -" << d << " 0" << endl;
+  }
+}
+
+void g::recount_data(){
+  if( beenModified ){
+    recalc_edges();
+    
+    for( int i = 0; i < numTris; i++ ){
+      delete[] tris[i];
+    }
+    delete[] tris;
+    get_tris();
+
+    beenModified = false;
   }
 }

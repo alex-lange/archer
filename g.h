@@ -28,11 +28,13 @@ class g {
   void remove_circ_edge( int e );
   bool is_edge( int u, int v ) const;
   int min_degree();
+  vector<int> max_clique();
+  vector<int> max_independent_set();
   void remove_vs( vector<int> vs, int k );
   void remove_distvs( int k, int d, int s = 0 );
   void remove_randvs( int num );
   int k4_free_process();
-  int k4_free_process( vector<edge> edges_in);
+  int k4_free_process( vector<edge> * edges_in);
   void make_complement();
   void make_cycle();
   void make_complete();
@@ -41,7 +43,6 @@ class g {
   void make_galois_circ( int p, int n, int r );
   void make_projective_plane( int p, int k, bool cut = false,
 			      string pr = "[ 1 1 ]" );
-  //void make_galois_circ( long p, long n );
   void make_circ( vector<int> dists );
   void make_embedded_rc( int r, int num = 2 );
   int make_rand_er( float sigma );
@@ -77,6 +78,9 @@ class g {
   void get_k4s( bool vertex = false );
   void recalc_edges();
   void set_up();
+  void max_clique_backtrack( int l );
+  void fix_data();
+  void recount_data();
  
  private:
   int n, arraySize, numEdges, oldN;
@@ -90,9 +94,16 @@ class g {
   vector< int * > ks;
   bool * inTri;
   bool * inKs;
-  bool calcedTris;
+  bool beenModified;
   bool *** isTri;
   vector<vset> gA;
+  vector<vset> gB;
+  vset gV;
+
+  // used for max-clique algorithm
+  vector<vset> gC;
+  vector< int > X, optClique;
+  int optSize;
 
 };
 

@@ -34,7 +34,6 @@ void order_command::execute( g * graph, vector<string> args){
   if( pos != args.end() ){
     throw "Invalid argument number for " + name;
   }
-
   cout << graph->order() << endl;
 }
 
@@ -49,9 +48,37 @@ void num_tri_command::execute( g * graph, vector<string> args){
   if( pos != args.end() ){
     throw "Invalid argument number for " + name;
   }
-
   cout << graph->num_tris() << endl;
 }
+
+
+max_clique_command::max_clique_command(){
+  name = "max_cl";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void max_clique_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->max_clique();
+}
+
+
+max_is_command::max_is_command(){
+  name = "max_is";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void max_is_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->max_independent_set();
+}
+
 
 
 remove_edge_command::remove_edge_command(){
@@ -150,6 +177,21 @@ void remove_rand_vs_command::execute( g * graph, vector<string> args){
 }
 
 
+remove_max_is_command::remove_max_is_command(){
+  name = "cut_is";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void remove_max_is_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  vector<int> cuts = graph->max_independent_set();
+  graph->remove_vs( cuts, cuts.size() );
+}
+
+
 k4_free_proc_command::k4_free_proc_command(){
   name = "k4_free";
   GraphCommandBase::base().register_c( name, this );
@@ -160,7 +202,8 @@ void k4_free_proc_command::execute( g * graph, vector<string> args){
   if( pos  != args.end() ){
     throw "Invalid argument number for " + name;
   }
-  graph->k4_free_process();
+  int count = graph->k4_free_process();
+  cout << "Added " << count << " edges." << endl;
 }
 
 
@@ -518,6 +561,40 @@ void has_c_command::execute( g * graph, vector<string> args){
 }
 
 
+print_all_command::print_all_command(){
+  name = "print_all";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void print_all_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  string filename = *pos;
+  string adjFile = filename + ".adj";
+  string g6File = filename + ".g6";
+  string satFile = filename + ".sat";
+  string shFile = filename + ".eig";
+  string rdyFile = filename + ".rdy";
+
+  ofstream adj (adjFile.c_str());
+  ofstream g6 (g6File.c_str());
+  ofstream sat (satFile.c_str());
+  ofstream sh (shFile.c_str());
+  ofstream rdy (rdyFile.c_str());
+  if( sh.is_open() ){
+    graph->print_sparse_h( &sh );
+    graph->print( &adj );
+    graph->print_g6( &g6 );
+    graph->print_sparse_h( &rdy, true );
+    graph->print_sat( &sat );
+  }
+  else{
+    throw "Error opening file " + filename;
+  }
+}
+
 
 print_command::print_command(){
   name = "print";
@@ -543,7 +620,6 @@ void print_command::execute( g * graph, vector<string> args){
     }
   }
 }
-
 
 
 printg6_command::printg6_command(){
@@ -724,12 +800,15 @@ void print_satv44_command::execute( g * graph, vector<string> args){
 get_edges_command getEdgesCommand;
 order_command getOrderCommand;
 num_tri_command numTriCommand;
+max_clique_command maxCliqueCommand;
+max_is_command maxISCommand;
 remove_edge_command removeEdgeCommand;
 add_edge_command addEdgeCommand;
 add_circ_edge_command addCircEdgeCommand;
 remove_circ_edge_command removeCircEdgeCommand;
 remove_dist_vs_command removeDistVsCommand;
 remove_rand_vs_command removeRandVsCommand;
+remove_max_is_command removeMaxISCommand;
 k4_free_proc_command k4FreeProcess;
 make_complement_command makeComplementCommand;
 make_cyc_command makeCycCommand;
@@ -752,6 +831,7 @@ add_all_cer_command addAllCERCommand;
 remove_k_command removeKCommand;
 count_k_command countKCommand;
 has_c_command hasCCommand;
+print_all_command printAllCommand;
 print_command printCommand;
 printg6_command printg6Command;
 print_sparse_command printSparseCommand;

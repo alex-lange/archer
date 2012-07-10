@@ -84,10 +84,39 @@ vset set_intersection( vset S, vset R, int arraySize){
   return T;  
 }
 
+// completemnts the set
 vset set_complement( vset S, int arraySize){
   vset T( arraySize, 0 );
   for( int i = 0; i < arraySize; i++ ){
     T[i] = ~S[i];
   }
   return T;
+}
+
+// gets number of bits in set using kernighan's method
+int set_order( vset S, int arraySize ){
+  int order = 0;
+  for( int i = 0; i < arraySize; i++ ){
+    uint64_t c;
+    for( c = 0; S[i]; c++ ){
+      S[i] &= S[i] - 1;
+    }
+    order += c;
+  }
+  return order;
+}
+
+
+// gets the first bit of set
+int first_bit( vset S, int arraySize ){
+  for( int i = 0; i < arraySize; i++ ){
+    int j = -1;
+    while( S[i] ){
+      // shifts right until 0
+      S[i] >>= 1;
+      j++;
+    }
+    if( j >= 0 ) return i * intSize + ( intSize - j - 1 );
+  }
+  return -1;
 }
