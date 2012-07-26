@@ -6,6 +6,8 @@
 #define _G_H
 
 #include <vector>
+#include <iostream>
+#include <string>
 #include "set_operations.h"
 
 using namespace std;
@@ -28,8 +30,9 @@ class g {
   void remove_circ_edge( int e );
   bool is_edge( int u, int v ) const;
   int min_degree();
-  vector<int> max_clique();
-  vector<int> max_independent_set();
+  vector<int> max_clique( bool print = true, int k = -1 );
+  vector<int> max_independent_set( bool print = true, int k = -1);
+  bool has_clique( int k, bool is = false );
   void remove_vs( vector<int> vs, int k );
   void remove_distvs( int k, int d, int s = 0 );
   void remove_randvs( int num );
@@ -40,6 +43,7 @@ class g {
   void make_complete();
   void make_residue_circ( int r );
   bool make_l_circ( int s );
+  void make_gcd_circ( int start );
   void make_galois_circ( int p, int n, int r );
   void make_projective_plane( int p, int k, bool cut = false,
 			      string pr = "[ 1 1 ]" );
@@ -65,7 +69,9 @@ class g {
   void print_sdpa( ostream * o = &cout );
   void print_sat( ostream * o = &cout, bool weighted = false, int numWeighted = 0 );
   void print_sat34( ostream * o = &cout );
+  void print_sat4me( ostream *o = &cout );
   void print_satv44( ostream * o = &cout );
+  int get_k4me();
   
  public:
   struct compZZ_pE;
@@ -76,9 +82,10 @@ class g {
   void count_tris();
   void get_tris( bool vertex = false );
   void get_k4s( bool vertex = false );
+  
   void recalc_edges();
   void set_up();
-  void max_clique_backtrack( int l );
+  void max_clique_backtrack( int l, int k );
   void fix_data();
   void recount_data();
  
@@ -95,6 +102,7 @@ class g {
   bool * inTri;
   bool * inKs;
   bool beenModified;
+  bool firstGo;
   bool *** isTri;
   vector<vset> gA;
   vector<vset> gB;

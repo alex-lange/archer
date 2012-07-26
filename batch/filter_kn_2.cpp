@@ -22,10 +22,14 @@ int vertex_extend(g nautg, int n, int k, int v, int num ){
     int addedWorked = 0;
     nautg.add_edge( v, n - 1 );
     bool okay = true;
+
+    // min degree requirement
     int d = nautg.min_degree();
     if( !((d*d - d + 1) <= n) ){
       okay = false;
     }
+
+    // check to see if it created a cycle
     for( int i = 0; i < n-1 && okay; i++ ){
       // find neighbors of n-1
       if( nautg.is_edge( i, n-1 ) && i != v ){
@@ -37,31 +41,27 @@ int vertex_extend(g nautg, int n, int k, int v, int num ){
 	}
       }
     }
-    nautg.make_complement();
-    bool isK = nautg.is_k( k );
-    nautg.make_complement();
 
+    // see if it created an IS of size k
+    bool isK = true;
+    if( okay ){
+      isK = nautg.has_clique( k, true );
+    }
+    
+    // if no C4 of IS of K
     if( okay && !isK ){
       totalNew++;
       addedWorked = 1;
       nautg.print_g6();
     }
-    //if( okay ){
-    //return addedWorked + vertex_extend( nautg, n, k, v+1, num );
-      //}
+
+    // if it didn't create a C4, we can still add more edges
     if( okay ){
       vertex_extend( nautg, n, k, v+1, num );
     }
     
+    // move onto next vertex with out the edge there
     nautg.remove_edge(v,n-1);
-    /*
-    nautg.make_complement();
-    isK = nautg.is_k();
-    nautg.make_complement();
-    if( !isK ){
-      num++;
-      }*/ 
-    
     vertex_extend( nautg, n, k, v+1, num );
   }
 }
@@ -77,9 +77,6 @@ int main( int argc, char *argv[] ){
     inFile = opengraphfile( NULL, &codetype, 0, 1 );
     outFile = stdout;
   }
-  /*else{
-    inFile = opengraphfile( argv[2], &codetype, 0, 1 );
-    }*/
 
   if( inFile == NULL ){
     cerr << "Error: Cannot open input file" << endl;
@@ -88,36 +85,46 @@ int main( int argc, char *argv[] ){
 
   int n, m;
   unsigned long long int bit, row;
-  int numGraphs = 0;
   string filename;
   int count = 0;
+  int graph_num = 0;
   int newCount = 0;
-  bool alreadyFiltered = true;
+  bool alreadyFiltered = false;
   bool hasK;
   
   int k;
   char opt = 'r';
+  // if only one arg, the arg is the independent set
   if( argc == 2 ){
     k = atoi( argv[1] );
   }
   else{
+    // if the first arg is an option, use it
     if( argv[1][0] == '-' ){
       opt = argv[1][1];
       k = atoi( argv[2] );
+      alreadyFiltered = true;
     }
     else{
       k = atoi( argv[1] );
     }
   }
 
+
+  // read in graphs
   while( ( inG = readg(inFile, NULL, 0, &m, &n ) ) != NULL ){
 
     stringstream out;
-    out << numGraphs;
 
-    g * nautg = new g (n);
-    numGraphs++;
+    g * nautg;
+    if( opt == 'v' ){
+      nautg = new g(n + 1);
+    }
+    else{
+      nautg = new g(n);
+    }
     
+    // convert g6 to graph
     for( int i = 0; i < n; i++ ){
       row = inG[i] >> (WORDSIZE - n );
       bit=((long long int)1<<(n-1));
@@ -129,13 +136,12 @@ int main( int argc, char *argv[] ){
       }
     }
 
+    // if the graphs are already filtered, no need to look for IS
     if( alreadyFiltered ){
       hasK = false;
     }
     else{
-      nautg->make_complement();
-      hasK = nautg->is_k();
-      nautg->make_complement();
+      hasK = nautg->has_clique(k, true);
     }
     
     if( !hasK ){
@@ -144,89 +150,26 @@ int main( int argc, char *argv[] ){
 	writeg6(outFile, inG, m, n );
       }
       else if( opt == 'v' ){
-	//vector<int*>* inds = nautg->get_ks(k-1);
-	//  cout << inds->size() << endl;
-	//
-	//int indNum = inds->size();
-	//  cout << "indNum = " << indNum << endl;
-	//bool hit[indNum];
-	//for( int i = 0; i < indNum; i++ ){
-	//  hit[i] = false;
-	//}
-	
-	g one(1);
+	graph_num++;
+	// Add vertex to the graph	
+	/*g one(1);
 	g * nautg2 = new g( n + 1 );
 	vector<g*> graphs;
 	graphs.push_back(nautg);
 	graphs.push_back(&one);
-	nautg2->join_graphs( 2, graphs );
+	nautg2->join_graphs( 2, graphs );*/
 	
-	//int newNeighbor = 0;
-	//bool addIt = true;
-	//bool validGraph = true;
-	// get neighers of new vertex
-	//cout << "NEW GRAPH" << endl;
-	//nautg2->print();
-	
+	// run vertex_extend on the new graph
 	recurseCount = 0;
-      	cerr << count << endl;
 	totalNew = 0;
-	vertex_extend(*nautg2, n + 1, k, 0, count );
+	vertex_extend(*nautg, n + 1, k, 0, count );
 	newCount = newCount + totalNew;
-	if( (newCount % 100) == 0 && newCount != 0 ){
-	  cerr << "FOUND " << newCount << endl;
+	if( (graph_num % 1000) == 0 ){
+	  cerr << graph_num << endl;
 	}
-	// cout << recurseCount << endl;
 	
-	//  newCount = vertex_extend(*nautg2, 0, k-1, 0 );
-	
-	/*for( int indCur = 0; indCur < indNum; indCur++ ){
-	  if( !hit[indCur] ){
-	  cout << indCur << endl;
-	  for( int indMember = 0; indMember < k - 1; indMember++ ){
-	  //   cout << indCur << " " << indMember << endl;
-	  newNeighbor = (*inds)[indCur][indMember];
-	  //    cout << "Got new neighbor " << newNeighbor << endl;
-	  addIt = true;
-	  if( !nautg2->is_edge(n,newNeighbor ) ){
-	  for( int neighbor = 0; neighbor < n; neighbor++ ){
-	  if( nautg2->is_edge( n, neighbor ) ){
-	  for( int j = 0; j < n; j++ ){
-	  if( nautg2->is_edge( neighbor, j ) && nautg->is_edge( newNeighbor, j ) ){
-	  addIt = false;
-	  break;
-	  }
-	  }
-	  }
-	  }
-	  
-	  if( addIt ){
-	  cout << "Added edge " << newNeighbor << endl;
-	  nautg2->add_edge( n, newNeighbor );
-	  for( int ii = 0; ii < indNum; ii++ ){
-	  for( int jj = 0; jj < k-1; jj++ ){
-	  if( (*inds)[ii][jj] == newNeighbor ){
-	  hit[ii] = true;
-	  }
-	  }
-	  }
-	  validGraph = true;
-	  cout << indCur << endl;
-	  for( int i = 0; i < indNum; i++ ){
-	  cout << hit[i] << " ";
-	  validGraph = validGraph && hit[i];
-	  }
-	  cout << endl;
-	  if( validGraph ){
-	  newCount++;
-	  }
-	  }
-	  }
-	  }
-	  }
-	  }// */
         
-	delete nautg2;
+	//	delete nautg;
       }
       else{
 	cerr << "Error: Option not supported" << endl;
@@ -237,9 +180,8 @@ int main( int argc, char *argv[] ){
     delete nautg;
  
   }
-  /*cout << endl;
-  cout << count << endl;
-  cout << newCount << endl;*/
+
+  cerr << "Total count = " << count << endl;
 
   delete inG;
 }

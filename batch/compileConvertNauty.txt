@@ -1,1 +1,4 @@
 g++ -o convertNauty /home/alex/software/nauty24r2/gtools.o ../g.o ../set_operations.o ../number_algorithms.o convertNauty.cpp -L/usr/lib -lntl -lm
+
+
+g++ -o filter_kn_2 /home/alex/software/nauty24r2/gtools.o ../g.o ../g_core.o ../set_operations.o ../number_algorithms.o filter_kn_2.cpp

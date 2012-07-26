@@ -1,18 +1,9 @@
-#include <iostream>
 #include <sstream>
 #include <fstream>
-#include <vector>
-#include <map>
 #include <algorithm>
 #include <stdlib.h>
 #include <time.h>
-//#include <NTL>
 #include <utility>
-#include <gf2x.h>
-#include <NTL/vec_ZZ_pE.h>
-#include <NTL/ZZ_pXFactoring.h>
-#include <NTL/ZZ_pE.h>
-#include <NTL/ZZ_pEX.h>
 #include <math.h>
 
 
@@ -20,121 +11,12 @@
 #include "number_algorithms.h"
 
 using namespace std;
-using namespace NTL;
 
-g::g( int vsize ) :
-  n( vsize )
-{
-  set_up();
-}
-
-g::g( const g &otherG ){
-  n = otherG.order();
-  set_up();
-  for( int i = 0; i < n; i++ ){
-    for( int j = 0; j < n; j++ ){
-      if( otherG.is_edge(i,j) ){
-	add_edge(i,j);
-      }
-    }
-  }
-}
-
-g::~g(){
-  for( int i = 0; i < oldN; i++ ){
-    delete[] edges[i];
-  }
-
-  delete[] edges;
-  k4s.clear();
-  ks.clear();
-
-  delete[] inTri;
-  delete[] inKs;
-  
-  for( int i = 0; i < n; i++ ){
-    for( int j = 0; j < n; j++ ){
-      delete[] isTri[i][j];
-    }
-    delete[] isTri[i];
-  }
-  delete[] isTri;
-}
-
-void g::set_up(){
-  oldN = n;
-  arraySize = n / intSize;
-  if( ( n % intSize ) != 0 ) arraySize++;
-  gA.resize( n );
-  gB.resize( n );
-  for( int i = 0; i < n; i++ ){
-    gA[i].resize( arraySize, 0 );
-    gB[i].resize( arraySize, 0 );
-  }
-  numEdges = 0;
-  edges = new int*[n];
-  inKs = new bool[n];
-  inTri = new bool[n];
-  isTri = new bool**[n];
-  vdegree = new int[n];
-
-  for( int i = 0; i < n; i++ ){
-    edges[i] = new int[n];
-    inKs[i] = false;
-    inTri[i] = false;
-    vdegree[i] = 0;
-
-    for( int b = i + 1; b < n; b++ ){
-      set_insert( b, gB[i] );
-    }
-  }
-
-  for( int i = 0; i < n; i++ ){
-    isTri[i] = new bool*[n];
-    for( int j = 0; j < n; j++ ){
-      isTri[i][j] = new bool[n];
-    }
-  }
-
-  beenModified = true;
-
-}
-
-
-
-int g::order() const{
-  return n;
-}
-
-int g::num_edges(){
-  recount_data();
-  return numEdges;
-}
 
 int g::num_tris(){
   recount_data();
   return numTris;
 }
-
-void g::add_edge( int u, int v ){
-  if( u < n && u >= 0 && v < n && v >= 0 ){
-    if( !is_edge(u,v) ){
-      numEdges++;
-      set_insert( u, gA[v] );
-      set_insert( v, gA[u] );
-      edges[u][v] = numEdges;
-      edges[v][u] = numEdges;
-      vdegree[u]++;
-      vdegree[v]++;
-      beenModified = true;
-    }
-  }
-  else{
-    cerr << "Error: Invalid vertices " << u << " and " << v << endl;
-    cerr << "Size of graph = " << n << endl;
-  }
-}
-
 
 void g::add_circ_edge( int d ){
   int x;
@@ -144,117 +26,12 @@ void g::add_circ_edge( int d ){
   }
 }
 
-void g::remove_edge( int u, int v ){
-  if( u < n && u >= 0 && v < n && v >= 0
-      && in_set(u, gA[v]) && in_set(v, gA[u]) ){
-    if( is_edge(u,v) ){
-      numEdges--;
-      set_delete( u, gA[v] );
-      set_delete( v, gA[u] );
-      edges[u][v] = 0;
-      edges[v][u] = 0;
-      vdegree[u]--;
-      vdegree[v]--;
-      beenModified = true;
-    }
-  }
-}
-
 void g::remove_circ_edge( int d ){
   int x;
   for( int v = 0; v < n; v++ ){
     x = ( v + d ) % n;
     remove_edge( v, x );
   }
-}
-
-bool g::is_edge( int u, int v ) const{
-  return in_set( u, gA[v] );
-}
-
-int g::min_degree(){
-  int min = n+1;
-  for( int i = 0; i < n; i++ ){
-    if( vdegree[i] < min ){
-      min = vdegree[i];
-    }
-  }
-  return min;
-}
-
-
-void g::max_clique_backtrack( int l ){
-    // get new optimum value
-  if( l > optSize ){
-    optSize = l;
-    optClique = X;
-  }
-  
-  // calculates new tree level
-  if( l == 0 ){
-    gC[l] = gV;
-  }else{
-    // gets only the vertices we want
-    gC[l] = set_intersection( gC[l-1], set_intersection( gA[X[l-1]], gB[X[l-1]], arraySize ), arraySize);
-  }
-  vset cl = gC[l];
-
-  // Bounding/Tree Pruning
-  int m;
-  // m = greedy_color( C[l] ) + l;` (not implemented yet)
-  // m = sampling_bound( C[l] ) + l; (not implmented yet)
-  m = l + set_order( gC[l], arraySize );
-  
-  int x = first_bit( cl, arraySize );
-  while( x != -1 ){
-    // bound
-    if( m <= optSize ) return;
-    X[l] = x;
-    max_clique_backtrack( l + 1 );
-    set_delete( x, cl );
-    x = first_bit( cl, arraySize );
-  }
-}
-
-
-vector<int> g::max_clique(){
-  // set all global variables needed
-  // (only use them for max-clique, so no use putting them in set_up)
-  gC.resize( n + 1 );
-  gV.resize( arraySize );
-  for( int i = 0; i < arraySize; i++ ){
-    gV[i] = empty;
-  }
-  X.resize( n );
- 
-  for( int i = 0; i < n+1; i++ ){
-    gC[i].resize( arraySize );
-    for( int j = 0; j < arraySize; j++ ){
-      gC[i][j] = empty;
-    }
-  }
-  for( int i = 0; i < n; i++ ){
-    X[i] = 0;
-    set_insert( i, gV );
-  }
-  optSize = 0;
-  
-  max_clique_backtrack( 0 );
-  cout << "Size: " << optSize << endl;
-  vector<int> realClique;
-  for( int i = 0; i < optSize; i++ ){
-    realClique.push_back( optClique[i] );
-  }
-
-  return realClique;
-}
-
-
-vector<int> g::max_independent_set(){
-  make_complement();
-  vector<int> realClique = max_clique();
-  make_complement();
-  return realClique;
 }
 
 
@@ -450,6 +227,27 @@ bool g::make_l_circ( int s ){
 }
 
 
+void g::make_gcd_circ( int start ){
+  int numAdded = 0;
+  vset D(arraySize,0);
+  for( int64_t i = start; i < n; i++ ){
+    if( n % i == 0 ){
+      set_insert( i, D );
+    }
+  }
+  for( int v = 0; v < n; v++ ){
+    for( int x = v + 1; x < n; x++ ){
+      if( in_set( gcd(x - v, n), D ) ){
+	add_edge( v, x );
+	numAdded++;
+      }
+    }
+  }
+  cout << "Added " << numAdded << " edges" << endl;
+
+}
+
+
 // Makes the graph a random graph from Erdos-Renyi algorithm
 // @return the number of edges added
 int g::make_rand_er( float sigma ){
@@ -469,361 +267,6 @@ int g::make_rand_er( float sigma ){
   }
   return numEdges;
 }
-
-struct g::compZZ_pE{
-  bool operator() (const ZZ_pE& left, const ZZ_pE& right) const
-  {
-    string sleft, sright;
-    ostringstream loss, ross;
-    loss << left;
-    sleft = loss.str();
-    sleft = sleft.substr(1,sleft.length()-2);
-    ross << right;
-    sright = ross.str();
-    sright = sright.substr(1,sright.length()-2);
-    istringstream liss(sleft,istringstream::in);
-    istringstream riss(sright,istringstream::in);
-
-    //  cout << "Comparing " << sleft << " and " << sright << endl;
-    
-    if( sleft.length() < sright.length() ){
-      //    cout << sleft << " is less degree, so it is less" << endl;
-      return true;
-    }
-    else if( sleft.length() == sright.length() ){
-      int degree = sleft.length() / 2 + 1;
-      int coeffs[2][degree];
-      for( int i = 0; i < degree; i++ ){
-	liss >> coeffs[0][i];
-	riss >> coeffs[1][i];
-      }
-      for( int i = degree-1; i >= 0; i-- ){
-	//	cout << "Comparing coeffs " << coeffs[0][i] << " and " << coeffs[1][i] << endl;
-	if( coeffs[0][i] < coeffs[1][i] ){
-	  return true;
-	}
-	else if( coeffs[0][i] > coeffs[1][i] ){
-	  return false;
-	}
-      }
-    }
-    return false;
-  }
-};
-
-//struct g::primTable{
-//  static map<pair<int,int>,string> gen_table(){
-//    map<pair<int,int>,string> t;
-//    t[(3,6)] = "[ 1 1 ]";
-//  }
-  
-//};
-
-void g::make_galois_circ( int p, int n, int r ){
-  // define GF(p)
-  ZZ_p::init(to_ZZ(p));
-
-  // build irreducible polynomial P of degree n over GF(P)
-  ZZ_pX poly;
-  BuildIrred(poly, n);
-
-  // define GF(p^n), which is built around the irreducible poly
-  ZZ_pE::init(poly);
-
-  cout << "Created GF(" << p << "^" << n << ") with irreducible polynomial ";
-  cout << poly << endl;  
-  cout << "Cardinality = " << ZZ_pE::cardinality() << endl;
-  cout << "Degree = " << ZZ_pE::degree() << endl;
-  cout << "Modulus = " << ZZ_pE::modulus() << endl;
-
-  vector< ZZ_pE > elements;
-    
-  ZZ_pE x;
-  string prim;
-  if( p == 7 && n == 3 ){
-    prim = "[ 1 1 1 ]";
-  }
-  else if( p == 23 && n == 2 ){
-    prim = "[ 10 1 ]";
-  }
-  else{
-    prim = "[ 1 1 ]";
-  }
-  istringstream iss( prim, istringstream::in);
-  iss >> x;
-  
-  elements.push_back( x );
-  ZZ_pE y = power(x,2);
-
-  int count = 1;
-  while( x !=y ){
-    count++;
-    elements.push_back(y);
-    y = y * x;
-  }
-
-  cout << "Count = " << count << endl;
-
-  compZZ_pE comparePolys;
-  sort( elements.begin(), elements.end(), comparePolys );
-
-  map< ZZ_pE, bool, compZZ_pE > residues;
-  map< ZZ_pE, bool, compZZ_pE >::iterator res_it;
-
-  for( vector< ZZ_pE >::iterator it = elements.begin(); 
-       it != elements.end(); it++ ){
-    // cout << power(*it,4) << endl;
-    residues[power(*it,r)] = true;
-    //cout << *it << endl;
-  }
-
-  string neg = "[ -1 ]";
-  string one = "[ 1 ]";
-
-  istringstream nss( neg, istringstream::in );
-  ZZ_pE negp;
-  nss >> negp;
-  cout << "-1 = " << negp << " and is ";
-  if( residues[negp] != true ){
-    cout << "NOT ";
-  }
-  cout << "a residue" << endl;
-
-  int res_count = 0;
-  // cout << "*** RESIDUES ****" << endl;
-  for( res_it = residues.begin(); res_it != residues.end(); res_it++ ){
-    //cout << "  " << (*res_it).first << endl;
-    res_count++;
-  }
-  cout << "Num Residues = " << res_count << endl;
-
-  for( int i = 0; i < count; i++ ){
-    if( residues[elements[i]] == true ){
-      //  cout << elements[i] << " is a residue so add edge " << 0 << " " << i+1 << endl;
-      add_edge( 0, i+1 );
-    }
-    for( int j = i+1; j < count; j++ ){
-      if( (residues[elements[i] - elements[j]] == true) ){
-	//	cout << elements[i] << " - " << elements[j] << " = " << elements[i] - elements[j] << " so add edge " << i+1 << " " << j+1 << endl;
-	add_edge( i+1, j+1 );
-      }
-      else if( (residues[elements[j] - elements[i]] == true) ){
-	//	cout << elements[j] << " - " << elements[i] << " = " << elements[j] - elements[i] << " so add edge " << i+1 << " " << j+1 << endl;
-	add_edge( i+1, j+1 );
-      }
-    }
-  }
-}
-
-
-struct g::gf_point{
-  ZZ_pE x;
-  ZZ_pE y;
-  ZZ_pE z;
-};
-
-
-void g::make_projective_plane( int p, int k, bool cut, string pr ){
-
-  int q = pow( p, k );
-  if( (q*q +q + 1 ) != n ){
-    cerr << "Error: invalid q for n" << endl;
-    return;
-  }
-   // define GF(p)
-  ZZ_p::init(to_ZZ(p));
-
-  // build irreducible polynomial P of degree n over GF(P)
-  ZZ_pX poly;
-  BuildIrred(poly, k);
-
-  // define GF(p^n), which is built around the irreducible poly
-  ZZ_pE::init(poly);
-
-  cout << "Created GF(" << p << "^" << k << ") with irreducible polynomial ";
-  cout << poly << endl;  
-  cout << "Cardinality = " << ZZ_pE::cardinality() << endl;
-  cout << "Degree = " << ZZ_pE::degree() << endl;
-  cout << "Modulus = " << ZZ_pE::modulus() << endl;
-
-  vector< ZZ_pE > elements;
-  vector< gf_point > points;
-  
-  ZZ_pE x, z, o;
-  string zero = "[ 0 ]";
-  string one = "[ 1 ]";
-  string prim;
-  if( p == 7 && k == 3 ){
-    prim = "[ 1 1 1 ]";
-  }
-  else if( p == 23 && k == 2 ){
-    prim = "[ 10 1 ]";
-  }
-  else if( p == 7 && k == 1 ){
-    prim = "[ 3 ]";
-  }
-  else if( k == 1 ){
-    prim = "[ 2 ]";
-  }
-  else{
-    prim = pr;
-  }
-  
-  istringstream iss1( zero, istringstream::in);
-  iss1 >> z;
-  elements.push_back(x);
- 
-  istringstream iss2( prim, istringstream::in);
-  iss2 >> x;
-
-  istringstream iss3( one, istringstream::in);
-  iss3 >> o;
-  
-  elements.push_back( x );
-  ZZ_pE y = power(x,2);
-
-  int count = 2;
-  while( x !=y ){
-    count++;
-    elements.push_back(y);
-    y = y * x;
-  }
-
-  cout << "Count = " << count << endl;
-
-  for( vector< ZZ_pE >::iterator it = elements.begin(); it != elements.end(); it++ ){
-    //cout << *it << endl;
-  }
-
-  gf_point start;
-  start.x = o;
-  start.y = o;
-  start.z = o;
-  
-  //points.push_back( start );
-  for( int i = 0; i < count; i++ ){
-    gf_point copy = start;
-    copy.x = elements[i];
-    points.push_back( copy );
-    for( int j = 0; j < count; j++ ){
-      gf_point copy2 = copy;
-      if( !IsOne(elements[ j ]) ){
-	copy2.y = elements[j];
-	points.push_back( copy2 );
-      }
-    }
-  }
-
-  start.z = z;
-  for( int i = 0; i < count; i++ ){
-    gf_point copy = start;
-    copy.x = elements[i];
-    points.push_back( copy );
-  }
-
-  start.y = z;
-  points.push_back(start);
-  cout << points.size() << endl;
-
-  for( vector<gf_point>::iterator it = points.begin(); it != points.end(); it++ ){
-    for( vector<gf_point>::iterator it2 = it + 1; it2 != points.end(); it2++ ){
-      for( int i = 0; i < count ; i++ ){
-	//	if( !IsOne(elements[i] ) ){
-	  if( it->x == it2->x*elements[i] && it->y == it2->y*elements[i] &&
-	      it->z == it2->z*elements[i] ){
-	    cout << it->x << " " << it->y << " " << it->z << " and ";
-	    cout << it2->x << " " << it2->y << " " << it2->z;
-	    cout << " ARE EQUIVALENT!" << endl;
-	    //	  }
-	}
-      }
-    }
-  }
-
-  cout << "SIZE = " << points.size() << endl;
-
-  for( int i = 0; i < points.size(); i++ ){
-    cout << i << ": " << points[i].x << " " << points[i].y << " " << points[i].z << endl;
-    for( int j = 0; j < points.size(); j++ ){
-      if( i != j ){
-	if( IsZero( points[i].x * points[j].x + points[i].y * points[j].y + points[i].z * points[j].z ) ){
-	  //	  cout << points[i].x << " " << points[i].y << " " << points[i].z << " and ";
-	  //cout << points[j].x << " " << points[j].y << " " << points[j].z << " are edges" << endl;
-	  add_edge( i, j );
-	}
-	if( IsOne( points[i].x * points[j].x + points[i].y * points[j].y + points[i].z * points[j].z ) ){
-	  //	  cout << points[i].x << " " << points[i].y << " " << points[i].z << " and ";
-	  //cout << points[j].x << " " << points[j].y << " " << points[j].z << " are edges" << endl;
-	  // add_edge( i, j );
-	}
-      }
-    }
-    //    cout << endl;
-  }
-
-  
-  /*for( int i = 0; i < points.size(); i++ ){
-    cout << i << ": " << vdegree[i] << endl;
-    }*/
-
-  // if we want to cut out the absolute and hyperbolic vertices
-  if( cut ){
-    // Find absolute vertices
-    int absoluteNumber = 0;
-    vector<int> cuts;
-    bool cutThese[n];
-    for( int i = 0; i < n; i++ ){
-      cutThese[i] = false;
-    }
-
-    // find all absolute verticfes
-    for( int i = 0; i < n; i++ ){
-      if( vdegree[i] == q){
-	absoluteNumber++;
-	cuts.push_back( i );
-      }
-    }
-
-
-    if( absoluteNumber != q + 1 && p != 2){
-	cerr << "Error: graph did not generate correctly, "
-	     << "incorrect number of absolute vertices." << endl;
-    }
-
-    // find all vertices adjacent to absolute vertices (hyperbolic)
-    for( int i = 0; i < absoluteNumber; i++ ){
-      for( int j = 0; j < n; j++ ){
-	if( is_edge( cuts[i], j ) ){
-	  cutThese[j] = true;
-	}
-      }
-    }
-
-    // we do not want to cut the same vertex twice
-    for( int i = 0; i < absoluteNumber; i++ ){
-      cutThese[cuts[i]] = false;
-    }
-    
-    for( int i = 0; i < n; i++ ){
-      if( cutThese[i] ){
-	cuts.push_back(i );
-      }
-    }
-
-    if( p != 2 && (n - cuts.size()) != (q * (q-1) / 2) ){
-      cerr << "Error: graph did not generate correctly, "
-	   << "number of neither hyperbolic nor absolute is not correct"
-	   << endl;
-    }
-    
-    remove_vs( cuts, cuts.size() );
-
-  }
-
-  
-}
-
-
 
 void g::make_embedded_rc( int r, int num ){
   int subsize = n / num;
@@ -941,7 +384,6 @@ int g::connect_graphs( g* g1, g* g2, bool avoid, bool rand, int k ){
   if( rand ){
     edgesAdded = k4_free_process( &edges_in );
   }
-
   return edgesAdded;
 }
 
@@ -1194,10 +636,51 @@ vector<int*>* g::get_ks( int k ){
     cout << "Error: Counting/Removing K" << k << " is not supported" << endl;
   }
 
-  //cout << "count = " << count << endl;
-  
   return &ks;
 }
+
+
+int g::get_k4me(){
+  for( vector<int*>::iterator it = ks.begin(); it != ks.end(); it++ ){
+    delete *it;
+  }
+  ks.clear();
+  if( beenModified ){
+    recalc_edges();
+  }
+  int num_kme = 0;
+ 
+  // i j and k find all triangles
+  for( int i = 0; i < n-1; i++ ){
+    for( int j = i+1; j < n; j++ ){
+      if( is_edge(i, j) ){
+	for( int k = 0; k < n-1; k++ ){
+	  if( k != i && k!= j ){
+	    if( is_edge(i,k) && is_edge(j,k) ){
+	      for( int l = k+1; l < n; l++ ){
+		if( l != i && l!= j ){
+		  if( is_edge(i,l) && is_edge(j,l) ){
+		    ks.push_back( new int[5] );
+		    ks[num_kme][0] = edges[i][j]; 
+		    ks[num_kme][1] = edges[i][k];
+		    ks[num_kme][2] = edges[i][l];
+		    ks[num_kme][3] = edges[j][k];
+		    ks[num_kme][4] = edges[j][l];
+		    num_kme++;
+		  }
+		  //	cout << i << " " << j << " " << k << " " << l << endl;
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  
+  return num_kme;
+}
+
 
 bool g::causes_k( int u, int v, int k ){
   switch(k){
@@ -1537,6 +1020,7 @@ void g::print_g6( ostream *o ){
 
 void g::print_sparse_h( ostream * o, bool isRudy ){
   recount_data();
+  cout << "Recounted data" << endl;
 
   int a, b, c;
   int j = 0;
@@ -1693,6 +1177,28 @@ void g::print_sat34( ostream *o ){
   }
 }
 
+
+void g::print_sat4me( ostream *o ){
+  int a, b, c, d, e;
+  int num = get_k4me();
+
+  *o << "c SAT reduction for edge arrowing (K4-e,K4-e)" << endl;
+  *o << "c" << endl;
+  *o << "p cnf " << numEdges << " " << num*2 << endl;
+
+  for( int i = 0; i < num; i++ ){
+    for( int j = 0; j < 5; j++ ){
+      *o << ks[i][j] << " ";
+    }
+    *o << "0" << endl;
+    for( int j = 0; j < 5; j++ ){
+      *o << "-" << ks[i][j] << " ";
+    }
+    *o << "0" << endl;
+  }
+}
+
+
 void g::print_satv44( ostream * o ){
   int a, b, c, d;
   int numVar = 0;
@@ -1723,10 +1229,15 @@ void g::recount_data(){
   if( beenModified ){
     recalc_edges();
     
-    for( int i = 0; i < numTris; i++ ){
-      delete[] tris[i];
+    if( !firstGo ){
+      for( int i = 0; i < numTris; i++ ){
+	delete[] tris[i];
+      }
+      delete[] tris;
     }
-    delete[] tris;
+    else{
+      firstGo = false;
+    }
     get_tris();
 
     beenModified = false;

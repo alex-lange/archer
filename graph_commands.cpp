@@ -277,6 +277,20 @@ void make_l_circ_command::execute( g * graph, vector<string> args){
 }
 
 
+make_gcd_circ_command::make_gcd_circ_command(){
+  name = "mk_gcd";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_gcd_circ_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_gcd_circ( atoi( pos->c_str() ) );
+}
+
+
 
 make_joined_command::make_joined_command(){
   name = "mk_join";
@@ -540,6 +554,22 @@ void count_k_command::execute( g * graph, vector<string> args){
 }
 
 
+count_kme_command::count_kme_command(){
+  name = "count_kme";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void count_kme_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  int k = atoi( pos->c_str() );
+  int count = graph->get_k4me( );
+  cout << "Graph has " << count << " K4-e subgraphs" << endl;
+}
+
+
 
 has_c_command::has_c_command(){
   name = "has_c";
@@ -577,18 +607,21 @@ void print_all_command::execute( g * graph, vector<string> args){
   string satFile = filename + ".sat";
   string shFile = filename + ".eig";
   string rdyFile = filename + ".rdy";
+  string sdpaFile = filename + ".dat-s";
 
   ofstream adj (adjFile.c_str());
   ofstream g6 (g6File.c_str());
   ofstream sat (satFile.c_str());
   ofstream sh (shFile.c_str());
   ofstream rdy (rdyFile.c_str());
+  ofstream sdpa (sdpaFile.c_str());
   if( sh.is_open() ){
     graph->print_sparse_h( &sh );
     graph->print( &adj );
     graph->print_g6( &g6 );
     graph->print_sparse_h( &rdy, true );
     graph->print_sat( &sat );
+    graph->print_sdpa( &sdpa );
   }
   else{
     throw "Error opening file " + filename;
@@ -777,6 +810,27 @@ void print_sat34_command::execute( g * graph, vector<string> args){
 }
 
 
+print_sat4me_command::print_sat4me_command(){
+  name = "printf_sat4me";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void print_sat4me_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  string filename = *pos;
+  ofstream sparseH (filename.c_str());
+  if( sparseH.is_open() ){
+    graph->print_sat4me( &sparseH );
+  }
+  else{
+    throw "Error opening file " + filename;
+  }
+}
+
+
 print_satv44_command::print_satv44_command(){
   name = "printf_satv44";
   GraphCommandBase::base().register_c( name, this );
@@ -797,6 +851,8 @@ void print_satv44_command::execute( g * graph, vector<string> args){
   }
 }
 
+
+
 get_edges_command getEdgesCommand;
 order_command getOrderCommand;
 num_tri_command numTriCommand;
@@ -815,6 +871,7 @@ make_cyc_command makeCycCommand;
 make_comp_command makeCompCommand;
 make_res_circ_command makeResCircCommand;
 make_l_circ_command makeLCircCommand;
+make_gcd_circ_command makeGCDCircCommand;
 make_galois_circ_command makeGaloisCircCommand;
 make_projective_plane_command makeProjectivePlaneCommand;
 make_projective_plane_cut_command makeProjectivePlaneCutCommand;
@@ -830,6 +887,7 @@ add_all_ce_command addAllCECommand;
 add_all_cer_command addAllCERCommand;
 remove_k_command removeKCommand;
 count_k_command countKCommand;
+count_kme_command countKmECommand;
 has_c_command hasCCommand;
 print_all_command printAllCommand;
 print_command printCommand;
@@ -840,4 +898,5 @@ print_rudy_command printRudyCommand;
 print_sat_command printSatCommand;
 print_wsat_command printWSatCommand;
 print_sat34_command printSat34Command;
+print_sat4me_command printSat4meCommand;
 print_satv44_command printSatV44Command;

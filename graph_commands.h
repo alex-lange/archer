@@ -117,6 +117,14 @@ class make_l_circ_command : public GraphCommand{
 };
 
 
+class make_gcd_circ_command : public GraphCommand{
+ public:
+  make_gcd_circ_command();
+  void execute( g * graph, vector<string> args);
+};
+
+
+
 class make_cyc_command : public GraphCommand{
  public:
   make_cyc_command();
@@ -244,6 +252,13 @@ class has_c_command : public GraphCommand{
 };
 
 
+class count_kme_command : public GraphCommand{
+ public:
+  count_kme_command();
+  void execute( g * graph, vector<string> args);
+};
+
+
 class print_all_command : public GraphCommand{
  public:
   print_all_command();
@@ -304,6 +319,14 @@ class print_sat34_command : public GraphCommand{
   print_sat34_command();
   void execute( g * graph, vector<string> args);
 };
+
+
+class print_sat4me_command : public GraphCommand{
+ public:
+  print_sat4me_command();
+  void execute( g * graph, vector<string> args);
+};
+
 
 class print_satv44_command : public GraphCommand{
  public:
