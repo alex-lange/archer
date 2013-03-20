@@ -8,7 +8,14 @@
 #include "command.h"
 
 void GraphCommand::execute( g * graph, vector<g*> args){
+}
 
+string GraphCommand::get_name(){
+  return name;
+}
+
+string GraphCommand::get_desc(){
+  return description;
 }
 
 GraphCommandBase & GraphCommandBase::base(){
@@ -42,6 +49,7 @@ g * GraphCommandBase::lookup_graph( const string & c, const string & gs ){
   return it->second;
 }
 
+
 void GraphCommandBase::run(){
   string command;
   cout << prompt;
@@ -68,6 +76,24 @@ void GraphCommandBase::run(){
 	  }
 	  lookup_command(parts[0])->execute( lookup_graph(parts[0], parts[1]),
 					     graphs );
+	}
+	else if( parts[0] == "help" ){
+	  cout << "*************************************************" << endl;
+	  cout << "  COMMAND \t\t DESCRIPTION" << endl;
+	  for( map< string, GraphCommand* >::iterator it = cmdMap.begin();
+	       it != cmdMap.end(); it++ ){
+	    string space;
+	    string c_name = it->second->get_name();
+	    if( c_name.length() < 8 ){
+	      space = "\t\t";
+	    }
+	    else{
+	      space = "\t";
+	    }
+	    cout << c_name << space << it->second->get_desc() << endl;
+	  }
+	  cout << "*************************************************" << endl;
+
 	}
 	else{
 	  lookup_command(parts[0])->execute( lookup_graph(parts[0], parts[1]), 

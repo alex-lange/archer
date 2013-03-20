@@ -49,42 +49,64 @@ g::~g(){
 }
 
 void g::set_up(){
-  oldN = n;
-  arraySize = n / intSize;
-  if( ( n % intSize ) != 0 ) arraySize++;
-  gA.resize( n );
-  gB.resize( n );
-  for( int i = 0; i < n; i++ ){
-    gA[i].resize( arraySize, 0 );
-    gB[i].resize( arraySize, 0 );
-  }
-  numEdges = 0;
-  edges = new int*[n];
-  inKs = new bool[n];
-  inTri = new bool[n];
-  isTri = new bool**[n];
-  vdegree = new int[n];
-
-  for( int i = 0; i < n; i++ ){
-    edges[i] = new int[n];
-    inKs[i] = false;
-    inTri[i] = false;
-    vdegree[i] = 0;
-
-    for( int b = i + 1; b < n; b++ ){
-      set_insert( b, gB[i] );
+  if( n < 1000 ){
+    oldN = n;
+    arraySize = n / intSize;
+    if( ( n % intSize ) != 0 ) arraySize++;
+    gA.resize( n );
+    gB.resize( n );
+    for( int i = 0; i < n; i++ ){
+      gA[i].resize( arraySize, 0 );
+      gB[i].resize( arraySize, 0 );
     }
-  }
-
-  for( int i = 0; i < n; i++ ){
-    isTri[i] = new bool*[n];
-    for( int j = 0; j < n; j++ ){
-      isTri[i][j] = new bool[n];
+    numEdges = 0;
+    edges = new int*[n];
+    inKs = new bool[n];
+    inTri = new bool[n];
+    isTri = new bool**[n];
+    vdegree = new int[n];
+    
+    for( int i = 0; i < n; i++ ){
+      edges[i] = new int[n];
+      inKs[i] = false;
+      inTri[i] = false;
+      vdegree[i] = 0;
+      
+      for( int b = i + 1; b < n; b++ ){
+	set_insert( b, gB[i] );
+      }
     }
-  }
+    
+    for( int i = 0; i < n; i++ ){
+      isTri[i] = new bool*[n];
+      for( int j = 0; j < n; j++ ){
+	isTri[i][j] = new bool[n];
+      }
+    }
 
-  beenModified = true;
-  firstGo = true;
+    beenModified = true;
+    firstGo = true;
+  }
+  else{
+    cerr << "WARNING: Graph is large, using less memory." << endl;
+    oldN = n;
+    arraySize = n / intSize;
+    if( ( n % intSize ) != 0 ) arraySize++;
+    gA.resize( n );
+    gB.resize( n );
+    vdegree = new int[n];
+    for( int i = 0; i < n; i++ ){
+      gA[i].resize( arraySize, 0 );
+      gB[i].resize( arraySize, 0 );
+      vdegree[i] = 0;
+      for( int b = i + 1; b < n; b++ ){
+	set_insert( b, gB[i] );
+      }
+    }
+    numEdges = 0;
+    beenModified = true;
+    firstGo = true;
+  }
 
 }
 
@@ -215,7 +237,7 @@ vector<int> g::max_clique( bool print, int k ){
   
   max_clique_backtrack( 0, k );
   if(print){
-    cout << "Size: " << optSize << endl;
+    cout << "Order: " << optSize << endl;
   }
   vector<int> realClique;
   for( int i = 0; i < optSize; i++ ){
@@ -247,4 +269,26 @@ bool g::has_clique( int k, bool is ){
     make_complement();
   }
   return hasClique;
+}
+
+void g::read_g6( string g6 ){
+  int numEntries = n*(n-1)/2;
+  int c = 0;
+  int c_count = 1;
+  int i = 0;
+  int j = 0;
+  int b = 0;
+  for( int i = 0; i < n; i++ ){
+    for( int j = 0; j < i; j++ ){
+      if( b == 0 ){
+	c = g6[c_count];
+	c_count++;
+	c = c - 63;
+      }
+      if( c & ( 1 << ( 5 - b ) ) ){
+	add_edge( i, j );
+      }
+      b = ( b + 1 ) % 6;
+    }
+  }
 }

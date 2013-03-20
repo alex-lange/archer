@@ -11,6 +11,12 @@ class get_edges_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
+class get_edges2_command : public GraphCommand{
+ public:
+  get_edges2_command();
+  void execute( g * graph, vector<string> args);
+};
+
 
 class order_command : public GraphCommand{
  public:
@@ -181,6 +187,14 @@ class load_adj_command : public GraphCommand{
 };
 
 
+class read_g6_command : public GraphCommand{
+ public:
+  read_g6_command();
+  void execute( g * graph, vector<string> args);
+};
+
+
+
 class make_joined_command : public GraphCommand{
  public:
   make_joined_command();
@@ -210,6 +224,20 @@ class make_avoid_rand_connected_command : public GraphCommand{
   make_avoid_rand_connected_command();
   void execute( g * graph, vector<string> args);
   void execute( g * graph, vector<g*> args);
+};
+
+
+class make_turan_command : public GraphCommand{
+ public:
+  make_turan_command();
+  void execute( g * graph, vector<string> args);
+};
+
+
+class make_hamming_command : public GraphCommand{
+ public:
+  make_hamming_command();
+  void execute( g * graph, vector<string> args);
 };
 
 
@@ -278,6 +306,14 @@ class printg6_command : public GraphCommand{
   printg6_command();
   void execute( g * graph, vector<string> args);
 };
+
+
+class printgviz_command : public GraphCommand{
+ public:
+  printgviz_command();
+  void execute( g * graph, vector<string> args);
+};
+
 
 
 class print_sparse_command : public GraphCommand{

@@ -11,6 +11,7 @@ using namespace std;
 
 get_edges_command::get_edges_command(){
   name = "num_e";
+  description = "Returns number of edges";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -23,9 +24,25 @@ void get_edges_command::execute( g * graph, vector<string> args){
   cout << graph->num_edges( ) << endl;
 }
 
+get_edges2_command::get_edges2_command(){
+  name = "size";
+  description = "Returns number of edges";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void get_edges2_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+
+  cout << graph->num_edges( ) << endl;
+}
+
 
 order_command::order_command(){
   name = "order";
+  description = "Returns number of vertices";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -39,7 +56,8 @@ void order_command::execute( g * graph, vector<string> args){
 
 
 num_tri_command::num_tri_command(){
-  name = "numTris";
+  name = "num_tris";
+  description = "Returns number of triangles of graph";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -54,6 +72,7 @@ void num_tri_command::execute( g * graph, vector<string> args){
 
 max_clique_command::max_clique_command(){
   name = "max_cl";
+  description = "Returns order of the maximum clique";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -68,6 +87,7 @@ void max_clique_command::execute( g * graph, vector<string> args){
 
 max_is_command::max_is_command(){
   name = "max_is";
+  description = "Returns order of the maximum independent set";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -83,6 +103,7 @@ void max_is_command::execute( g * graph, vector<string> args){
 
 remove_edge_command::remove_edge_command(){
   name = "remove_e";
+  description = "Removes edge {u,v}";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -103,6 +124,7 @@ void remove_edge_command::execute( g * graph, vector<string> args){
 
 add_edge_command::add_edge_command(){
   name = "add_e";
+  description = "Add edge {u,v}";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -123,6 +145,7 @@ void add_edge_command::execute( g * graph, vector<string> args){
 
 add_circ_edge_command::add_circ_edge_command(){
   name = "add_ce";
+  description = "Add one circular edge of distance D";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -137,6 +160,7 @@ void add_circ_edge_command::execute( g * graph, vector<string> args){
 
 remove_circ_edge_command::remove_circ_edge_command(){
   name = "remove_ce";
+  description = "Removes circular edge based on distance";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -152,6 +176,7 @@ void remove_circ_edge_command::execute( g * graph, vector<string> args){
 remove_dist_vs_command::remove_dist_vs_command(){
   name = "remove_vsd";
   GraphCommandBase::base().register_c( name, this );
+  description = "Removes N vertices that are all at distance D apart";
 }
 
 void remove_dist_vs_command::execute( g * graph, vector<string> args){
@@ -165,6 +190,7 @@ void remove_dist_vs_command::execute( g * graph, vector<string> args){
 
 remove_rand_vs_command::remove_rand_vs_command(){
   name = "remove_vs_rand";
+  description = "Removes N vertices at random";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -179,6 +205,7 @@ void remove_rand_vs_command::execute( g * graph, vector<string> args){
 
 remove_max_is_command::remove_max_is_command(){
   name = "cut_is";
+  description = "Removes a maximum independent set from the graph";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -194,8 +221,10 @@ void remove_max_is_command::execute( g * graph, vector<string> args){
 
 k4_free_proc_command::k4_free_proc_command(){
   name = "k4_free";
-  GraphCommandBase::base().register_c( name, this );
-}
+  description = "Adds edges using the K4-free process";
+    // (randomly permutes all edges, adds edge if no K4 is formed)";
+
+  GraphCommandBase::base().register_c( name, this ); }
 
 void k4_free_proc_command::execute( g * graph, vector<string> args){
   vector<string>::iterator pos = args.begin() + 2;
@@ -209,6 +238,7 @@ void k4_free_proc_command::execute( g * graph, vector<string> args){
 
 make_complement_command::make_complement_command(){
   name = "mk_comp";
+  description = "Makes the graph the complement of itself";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -223,6 +253,7 @@ void make_complement_command::execute( g * graph, vector<string> args){
 
 make_cyc_command::make_cyc_command(){
   name = "mk_cyc";
+  description = "Makes graph a cycle graph";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -237,6 +268,7 @@ void make_cyc_command::execute( g * graph, vector<string> args){
 
 make_comp_command::make_comp_command(){
   name = "mk_k";
+  description = "Makes graph complete";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -251,6 +283,7 @@ void make_comp_command::execute( g * graph, vector<string> args){
 
 make_res_circ_command::make_res_circ_command(){
   name = "mk_rc";
+  description = "Makes Residue-Circulant graph (Dudek-Rodl)";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -265,6 +298,7 @@ void make_res_circ_command::execute( g * graph, vector<string> args){
 
 make_l_circ_command::make_l_circ_command(){
   name = "mk_lc";
+  description = "Makes circulant graph as defined by Lu";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -279,6 +313,7 @@ void make_l_circ_command::execute( g * graph, vector<string> args){
 
 make_gcd_circ_command::make_gcd_circ_command(){
   name = "mk_gcd";
+  description = "Makes GCD circulant graph";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -294,6 +329,7 @@ void make_gcd_circ_command::execute( g * graph, vector<string> args){
 
 make_joined_command::make_joined_command(){
   name = "mk_join";
+  description = "Uses 'join' operator on two graphs";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -307,6 +343,7 @@ void make_joined_command::execute( g * graph, vector<g*> args){
 
 make_connected_command::make_connected_command(){
   name = "mk_conn";
+  description = "Makes graph 'connected' with out adding any edges";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -321,6 +358,7 @@ void make_connected_command::execute( g * graph, vector<g*> args){
 
 make_avoid_connected_command::make_avoid_connected_command(){
   name = "mk_aconn";
+  description = "Connects two graphs, greedily adding edges with out causing a clique of order K";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -335,6 +373,7 @@ void make_avoid_connected_command::execute( g * graph, vector<g*> args){
 
 make_avoid_rand_connected_command::make_avoid_rand_connected_command(){
   name = "mk_arconn";
+  description = "Connects two graphs, randomly adding edges with out causing a clique of order K";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -349,6 +388,7 @@ void make_avoid_rand_connected_command::execute( g * graph, vector<g*> args){
 
 make_galois_circ_command::make_galois_circ_command(){
   name = "mk_gc";
+  description = "Makes residue-circulant graph based off the Galois Field of the order";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -364,6 +404,7 @@ void make_galois_circ_command::execute( g * graph, vector<string> args){
 
 make_projective_plane_command::make_projective_plane_command(){
   name = "mk_pp";
+  description = "Makes graph based on projective plane";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -378,6 +419,7 @@ void make_projective_plane_command::execute( g * graph, vector<string> args){
 
 make_projective_plane_cut_command::make_projective_plane_cut_command(){
   name = "mk_ppc";
+  description = "makes graph based on projective plane (only the 'absolute' vertices)";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -393,6 +435,7 @@ void make_projective_plane_cut_command::execute( g * graph, vector<string> args)
 
 make_circ_command::make_circ_command(){
   name = "mk_circ";
+  description = "Makes graph circulant based on list of distances given";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -423,6 +466,7 @@ void make_circ_command::execute( g * graph, vector<string> args){
 
 make_embedded_rc_command::make_embedded_rc_command(){
   name = "mk_erc";
+  description = "Embeds multiple Residue-Circulant graphs inside graph";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -436,9 +480,45 @@ void make_embedded_rc_command::execute( g * graph, vector<string> args){
 }
 
 
+make_turan_command::make_turan_command(){
+  name = "mk_turan";
+  description = "Makes Turan graph";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_turan_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  graph->make_turan( atoi( pos->c_str() ));
+}
+
+
+
+make_hamming_command::make_hamming_command(){
+  name = "mk_hamming";
+  description = "Makes Hamming graph H(q,d)";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void make_hamming_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 == args.end() ){
+    graph->make_hamming( atoi( pos->c_str() ) );
+  }
+  else if( pos + 2 == args.end() ){
+    graph->make_hamming( atoi( pos->c_str() ), atoi( (pos+1)->c_str() ));
+  }
+  else{
+    throw "Invalid argument number for " + name;
+  }
+}
+
 
 load_adj_command::load_adj_command(){
   name = "ld_adj";
+  description = "Loads file containing the adjacency list of a graph";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -451,10 +531,26 @@ void load_adj_command::execute( g * graph, vector<string> args){
   graph->load_adj( *pos );
 }
 
+read_g6_command::read_g6_command(){
+  name = "read_g6";
+  description = "Reads in graph6 string and creates graph from it";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void read_g6_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  
+  graph->read_g6( *pos );
+}
+
 
 
 add_all_noncrit_command::add_all_noncrit_command(){
   name = "add_all";
+  description = "Greedily add all edges that do not cause a k-clique";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -472,6 +568,7 @@ void add_all_noncrit_command::execute( g * graph, vector<string> args){
 
 add_all_ce_command::add_all_ce_command(){
   name = "add_allce";
+  description = "Greedily add all circular edges that do not cause a k-clique";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -488,6 +585,7 @@ void add_all_ce_command::execute( g * graph, vector<string> args){
 
 add_all_cer_command::add_all_cer_command(){
   name = "add_allcer";
+   description = "Randomly add all circular edges that do not cause a k-clique";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -524,6 +622,7 @@ void add_all_cer_command::execute( g * graph, vector<string> args){
 
 remove_k_command::remove_k_command(){
   name = "remove_k";
+  description = "Removes each clique of order K by deleting edges greedily";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -540,6 +639,7 @@ void remove_k_command::execute( g * graph, vector<string> args){
 
 count_k_command::count_k_command(){
   name = "count_k";
+  description = "Count number of complete subgraphs of order K";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -556,6 +656,7 @@ void count_k_command::execute( g * graph, vector<string> args){
 
 count_kme_command::count_kme_command(){
   name = "count_kme";
+  description = "Count number of complete subgraphs (minus one edge) of order K";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -573,6 +674,7 @@ void count_kme_command::execute( g * graph, vector<string> args){
 
 has_c_command::has_c_command(){
   name = "has_c";
+  description = "Checks if graphs contains cycle of order C";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -593,6 +695,7 @@ void has_c_command::execute( g * graph, vector<string> args){
 
 print_all_command::print_all_command(){
   name = "print_all";
+  description = "Prints adjacency matrix, graph6 format, and arrowing files: sh, rudy, SAT, and SDPA";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -631,6 +734,7 @@ void print_all_command::execute( g * graph, vector<string> args){
 
 print_command::print_command(){
   name = "print";
+  description = "Prints adjacency matrix of graph";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -657,6 +761,7 @@ void print_command::execute( g * graph, vector<string> args){
 
 printg6_command::printg6_command(){
   name = "printg6";
+  description = "Prints graph in graph6 format";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -682,8 +787,38 @@ void printg6_command::execute( g * graph, vector<string> args){
 }
 
 
+printgviz_command::printgviz_command(){
+  name = "print_gviz";
+  description = "Prints file for use in Graphviz";
+  GraphCommandBase::base().register_c( name, this );
+}
+
+void printgviz_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+ 
+  if( pos != args.end() && pos + 1 != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  if( pos == args.end() ){
+    graph->print_graphviz();
+  }
+  else{
+    string filename = *pos;
+    ofstream adj (filename.c_str());
+    if( adj.is_open() ){
+      graph->print_graphviz( &adj );
+    }
+    else{
+      throw "Error opening file " + filename;
+    }
+  }
+}
+
+
+
 print_sparse_command::print_sparse_command(){
-  name = "printf_sh";
+  name = "print_sh";
+  description = "Prints H_G graph in 'Sparse-H' format (used in MinEigs tests)";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -704,7 +839,8 @@ void print_sparse_command::execute( g * graph, vector<string> args){
 
 
 print_sdpa_command::print_sdpa_command(){
-  name = "printf_sdp";
+  name = "print_sdp";
+  description = "Prints H_G file for SDP MAX-CUT test (SDPA format)";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -725,7 +861,8 @@ void print_sdpa_command::execute( g * graph, vector<string> args){
 
 
 print_rudy_command::print_rudy_command(){
-  name = "printf_rh";
+  name = "print_rh";
+  description = "Prints H_G graph in Rudy format";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -746,7 +883,8 @@ void print_rudy_command::execute( g * graph, vector<string> args){
 
 
 print_sat_command::print_sat_command(){
-  name = "printf_sat";
+  name = "print_sat";
+  description = "Prints SAT reduction for arrowing triangles";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -767,7 +905,8 @@ void print_sat_command::execute( g * graph, vector<string> args){
 
 
 print_wsat_command::print_wsat_command(){
-  name = "printf_wsat";
+  name = "print_wsat";
+  description = "Prints weighted SAT reduction for arrowing triangles";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -790,7 +929,8 @@ void print_wsat_command::execute( g * graph, vector<string> args){
 
 
 print_sat34_command::print_sat34_command(){
-  name = "printf_sat34";
+  name = "print_sat34";
+  description = "Prints SAT reduction for arrowing (3,4)";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -811,7 +951,8 @@ void print_sat34_command::execute( g * graph, vector<string> args){
 
 
 print_sat4me_command::print_sat4me_command(){
-  name = "printf_sat4me";
+  name = "print_sat4me";
+  description = "Prints SAT reduction for arrowing (K4-e,K4-e)";
   GraphCommandBase::base().register_c( name, this );
 }
 
@@ -832,8 +973,9 @@ void print_sat4me_command::execute( g * graph, vector<string> args){
 
 
 print_satv44_command::print_satv44_command(){
-  name = "printf_satv44";
+  name = "print_satv44";
   GraphCommandBase::base().register_c( name, this );
+  description = "Prints SAT reduction for vertex arrowing of (4,4)";
 }
 
 void print_satv44_command::execute( g * graph, vector<string> args){
@@ -854,6 +996,7 @@ void print_satv44_command::execute( g * graph, vector<string> args){
 
 
 get_edges_command getEdgesCommand;
+get_edges2_command getEdges2Command;
 order_command getOrderCommand;
 num_tri_command numTriCommand;
 max_clique_command maxCliqueCommand;
@@ -876,7 +1019,10 @@ make_galois_circ_command makeGaloisCircCommand;
 make_projective_plane_command makeProjectivePlaneCommand;
 make_projective_plane_cut_command makeProjectivePlaneCutCommand;
 make_circ_command makeCircCommand;
+make_turan_command makeTuranCommand;
+make_hamming_command makeHammingCommand;
 make_embedded_rc_command makeEmbeddedRCCommand;
+read_g6_command readG6Command;
 load_adj_command loadAdjCommand;
 make_joined_command makeJoinedCommand;
 make_connected_command makeConnectedCommand;
@@ -892,6 +1038,7 @@ has_c_command hasCCommand;
 print_all_command printAllCommand;
 print_command printCommand;
 printg6_command printg6Command;
+printgviz_command printgVizCommand;
 print_sparse_command printSparseCommand;
 print_sdpa_command printSDPACommand;
 print_rudy_command printRudyCommand;

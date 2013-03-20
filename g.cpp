@@ -299,6 +299,119 @@ void g::make_embedded_rc( int r, int num ){
 }
 
 
+void g::make_turan( int r ){
+  int num_large = n % r;
+  int num_small = r - num_large;
+
+  int num_per_large, num_per_small;
+
+  if( num_large == 0 ){
+    num_per_large = n / r;
+    num_per_small = num_per_large;
+  }
+  else{
+    num_per_large = n / r + 1;
+    num_per_small = num_per_large - 1;
+  }
+
+  cout << "num_large " << num_large << endl;
+  cout << "num_small " << num_small << endl;
+  cout << "num_per_large " << num_per_large << endl;
+  cout << "num_per_small " << num_per_small << endl;
+
+  int cur_group = 0;
+  bool large_group = false;
+
+  if( num_large > 0 )
+    large_group = true;
+  
+  for( int v = 0; v < n; v++ ){
+    if( large_group && cur_group >= num_large ){
+      large_group = false;
+      cur_group = 0;
+    }
+    if( large_group ){
+      if( v % num_per_large == 0 && v != 0 )
+	cur_group++;
+      for( int u = 0; u < n; u++ ){
+	if( u < cur_group * num_per_large || 
+	    u >= (cur_group+1) * num_per_large ){
+	  add_edge( u, v );
+	}
+      }
+    }
+    else{
+      if( (v - num_large*num_per_large) % num_per_small == 0 && v != num_large*num_per_large ){
+	cur_group++;
+      }
+      int group_area = num_large*num_per_large + cur_group*num_per_small;
+      cout << group_area << endl;
+      for( int u = 0; u < n; u++ ){
+	if( u <  group_area || u >= (group_area+num_per_small) ){
+	  add_edge( u, v );
+	}
+      }
+    }
+  }
+}
+
+int ** hamming;
+int cur_hami;
+
+void g::make_hamming( int d, int x ){
+  int length = pow( x, d );
+  if( n != length ){
+    cerr << "Error: order is " << n << ". Need order " << length << endl;
+    return;
+  }
+  hamming = new int*[ length ];
+  for( int i = 0; i < length; i++ ){
+    hamming[ i ] = new int[d];
+  }
+  cur_hami=0;
+  int * cur_ham = new int[d];
+  make_hamming_help(d,0,cur_ham);
+
+  cout << "Creating hamming graph with order=" << length << ", d="<< d
+       << " and q=" << x << endl;
+
+  // Print vectors just to make sure it's right
+  /* for( int i = 0; i < length; i++ ){
+    for( int j = 0; j < d; j++ ){
+      cout << hamming[i][j];
+    }
+    cout << endl;
+    }*/
+  
+  int num_diff = 0;
+  for( int i = 0; i < length-1; i++ ){
+    for( int j = i+1; j < length; j++ ){
+      num_diff = 0;
+      for( int k = 0; k < d; k++ ){
+	if( hamming[i][k] != hamming[j][k] )
+	  num_diff++;
+      }
+      if( num_diff == 1 )
+	add_edge( i, j );
+    }
+  }
+}
+
+void g::make_hamming_help( int d, int s, int * cur_ham ){
+  if( s == d ){
+    for( int i = 0; i < d; i++ ){
+      hamming[ cur_hami ][i] = cur_ham[i];
+    }
+    cur_hami++;
+  }
+  else{
+    for( cur_ham[s] = 0; cur_ham[s] < 3; cur_ham[s]++ ){
+      make_hamming_help(d,s+1,cur_ham);
+    }
+  }
+}
+
+
 void g::load_adj( string filename ){
   string line;
   ifstream ifs( filename.c_str(), ifstream::in );
@@ -588,8 +701,6 @@ bool g::has_c( int c ){
     cerr << "Error: Counting/Removing C" << c << " is not supported" << endl;
     return false;
   }
-  
-
 }
 
 
@@ -984,12 +1095,38 @@ void g::print_g6( ostream *o ){
   const int powers[] = {32,16,8,4,2,1};
   vector<char> g6_string;
   char start = 0;
+  char next = 0;
 
   if( n <= 62 ){
     start = n+63;
+    g6_string.push_back( start );
+  }
+  else if(63 <= n && n <= 258047){
+    start = 126;
+    g6_string.push_back(start);
+    //   cout << 126 << " ";
+    int s = 6;
+    int t = 0;
+    for( int i = 17; i >= 0; i-- ){
+      s--;
+      if( n & ( 1 << i ) ){
+	t = t | ( 1 << s );
+      }
+      if( s == 0 ){
+	//	cout << t + 63 << " ";
+	next = t + 63;
+	g6_string.push_back(next);
+	s = 6;
+	t = 0;
+      }
+    }
+    cout << endl;
+  }
+  else{
+    cout << "Error: Order not supported" << endl;
   }
 
-  g6_string.push_back( start );
+  
 
   int bitSize = n*(n-1)/2;
   int count = 0;
@@ -1015,6 +1152,17 @@ void g::print_g6( ostream *o ){
     *o << *it;
   }
   *o << endl;
+}
+
+void g::print_graphviz( ostream * o ){
+  *o << "graph g {" << endl;
+  for( int i = 0; i < n-1; i++ ){
+    for( int j = i + 1; j < n; j++ ){
+      if( is_edge(i,j) )
+	*o << i << " -- " << j << ";" << endl;
+    }
+  }
+  *o << "}" << endl;
 }
 
 

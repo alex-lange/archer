@@ -19,8 +19,12 @@ class GraphCommand{
   virtual ~GraphCommand(){}
   virtual void execute( g * graph, vector<string> args) = 0;
   virtual void execute( g * graph, vector<g*> args);
+  string get_name();
+  string get_desc();
  protected:
   string name;
+  string description;
+  int arg_num;
 };
 
 class GraphCommandBase{

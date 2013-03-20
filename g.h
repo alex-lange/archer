@@ -30,6 +30,7 @@ class g {
   void remove_circ_edge( int e );
   bool is_edge( int u, int v ) const;
   int min_degree();
+  int degree( int v );
   vector<int> max_clique( bool print = true, int k = -1 );
   vector<int> max_independent_set( bool print = true, int k = -1);
   bool has_clique( int k, bool is = false );
@@ -50,6 +51,8 @@ class g {
   void make_circ( vector<int> dists );
   void make_embedded_rc( int r, int num = 2 );
   int make_rand_er( float sigma );
+  void make_turan( int r );
+  void make_hamming( int d, int n = 3 );
   void load_adj( string filename);
   bool join_graphs( int num, vector<g*> graphs );
   int connect_graphs( g* g1, g* g2, bool avoid = false, bool rand = false, int k = 4 );
@@ -63,8 +66,10 @@ class g {
   vector<int> add_all_ce( bool avoid = true, int k = 4 );
   vector<int> add_all_ce_rand( bool avoid = true, int k = 4 );
   void create_h( g * h );
+  void read_g6( string g6 );
   void print( ostream * o = &cout );
   void print_g6( ostream *o = &cout );
+  void print_graphviz( ostream *o = &cout );
   void print_sparse_h( ostream * = &cout, bool isRudy = false);
   void print_sdpa( ostream * o = &cout );
   void print_sat( ostream * o = &cout, bool weighted = false, int numWeighted = 0 );
@@ -88,6 +93,7 @@ class g {
   void max_clique_backtrack( int l, int k );
   void fix_data();
   void recount_data();
+  void make_hamming_help( int d, int s, int * cur_ham );
  
  private:
   int n, arraySize, numEdges, oldN;
