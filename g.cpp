@@ -1154,6 +1154,62 @@ void g::print_g6( ostream *o ){
   *o << endl;
 }
 
+
+string g::to_g6(){
+  const int powers[] = {32,16,8,4,2,1};
+  string g6_string;
+  char start = 0;
+  char next = 0;
+
+  if( n <= 62 ){
+    start = n+63;
+    g6_string.push_back( start );
+  }
+  else if(63 <= n && n <= 258047){
+    start = 126;
+    g6_string.push_back(start);
+    //   cout << 126 << " ";
+    int s = 6;
+    int t = 0;
+    for( int i = 17; i >= 0; i-- ){
+      s--;
+      if( n & ( 1 << i ) ){
+	t = t | ( 1 << s );
+      }
+      if( s == 0 ){
+	//	cout << t + 63 << " ";
+	next = t + 63;
+	g6_string.push_back(next);
+	s = 6;
+	t = 0;
+      }
+    }
+    cout << endl;
+  }
+
+  int bitSize = n*(n-1)/2;
+  int count = 0;
+  int cur = 63;
+  int pow = 0;
+
+  for( int i = 0; i < n; i++ ){
+    for( int j = 0; j < i; j++ ){
+      pow = count % 6;
+      if( is_edge( j, i ) ){
+	cur = cur + powers[pow];
+      }
+      if( pow == 5 || j == n - 2 ){
+	g6_string.push_back( cur );
+	cur = 63; 
+      }
+      count++;
+    }
+  }
+  
+  return g6_string;
+}
+
+
 void g::print_graphviz( ostream * o ){
   *o << "graph g {" << endl;
   for( int i = 0; i < n-1; i++ ){

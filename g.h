@@ -69,6 +69,7 @@ class g {
   void read_g6( string g6 );
   void print( ostream * o = &cout );
   void print_g6( ostream *o = &cout );
+  string to_g6();
   void print_graphviz( ostream *o = &cout );
   void print_sparse_h( ostream * = &cout, bool isRudy = false);
   void print_sdpa( ostream * o = &cout );
