@@ -22,6 +22,7 @@ class g {
 
  public:
   int order() const;
+  int size();
   int num_edges();
   int num_tris();
   void add_edge( int u, int v );
@@ -30,6 +31,7 @@ class g {
   void remove_circ_edge( int e );
   bool is_edge( int u, int v ) const;
   int min_degree();
+  int max_degree();
   int degree( int v );
   vector<int> max_clique( bool print = true, int k = -1 );
   vector<int> max_independent_set( bool print = true, int k = -1);
@@ -78,6 +80,8 @@ class g {
   void print_sat4me( ostream *o = &cout );
   void print_satv44( ostream * o = &cout );
   int get_k4me();
+  int ** get_tris_array();
+  bool check_coloring( int * coloring );
   
  public:
   struct compZZ_pE;

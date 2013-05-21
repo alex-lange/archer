@@ -358,8 +358,8 @@ void g::make_turan( int r ){
 int ** hamming;
 int cur_hami;
 
-void g::make_hamming( int d, int x ){
-  int length = pow( x, d );
+void g::make_hamming( int d, int q ){
+  int length = pow( q, d );
   if( n != length ){
     cerr << "Error: order is " << n << ". Need order " << length << endl;
     return;
@@ -373,7 +373,7 @@ void g::make_hamming( int d, int x ){
   make_hamming_help(d,0,cur_ham);
 
   cout << "Creating hamming graph with order=" << length << ", d="<< d
-       << " and q=" << x << endl;
+       << " and q=" << q << endl;
 
   // Print vectors just to make sure it's right
   /* for( int i = 0; i < length; i++ ){
@@ -980,6 +980,114 @@ void g::get_tris( bool vertex ){
   }
 }
 
+int ** g::get_tris_array(){
+  recount_data();
+  return tris;
+}
+
+bool g::check_coloring( int * coloring ){
+  int edge_vs[ numEdges ][2];
+  g red(n);
+  g blue(n);
+  
+  for( int i = 0; i < n-1; i++ ){
+    for( int j = i+1; j < n; j++ ){
+      if( edges[i][j] != 0 ){
+	if( coloring[ edges[i][j] - 1 ] == 0 )
+	  red.add_edge(i,j);
+	else
+	  blue.add_edge(i,j);
+	  /*
+	edge_vs[ edges[i][j] - 1 ][0] = i;
+	edge_vs[ edges[i][j] - 1 ][1] = j;*/
+      }
+    }
+  }
+
+  if( red.num_tris() > 0 )
+    return false;
+  else if( blue.num_tris() > 0 )
+    return false;
+
+  /*
+
+  vector<int*> red;
+  vector<int*> blue;
+ 
+  for( int i = 0; i < numEdges; i++ ){
+    cout << coloring[i] << " ";
+    if( coloring[i] == 0 )
+      red.push_back(edge_vs[i]);
+    else
+      blue.push_back(edge_vs[i]);
+  }
+  cout << endl;
+  cout << red.size() << " sizes " << blue.size() << endl;
+
+  int l = red.size() - 2;
+
+  for( int i = 0; i < l; i++ ){
+    vector<int> vs;
+    vs.push_back( red[i][0] ); vs.push_back( red[i][1] );
+    vs.push_back( red[i+1][0] ); vs.push_back( red[i+1][1] );
+    vs.push_back( red[i+2][0] ); vs.push_back( red[i+2][1] );
+    sort(vs.begin(),vs.end());
+
+    int diff = 0;
+    for( vector<int>::iterator it = vs.begin()+1; it != vs.end(); it++ ){
+      if( *(it-1) != (*it) )
+	diff++;
+    }
+
+    if( diff == 2 ){
+      return false;
+    }
+    else{
+      cout << "red ";
+      for( vector<int>::iterator it = vs.begin(); it != vs.end(); it++ ){
+	cout << *it << " ";
+      }
+      cout << endl;
+      cout << "diff = " << diff << endl;
+    }
+  }
+
+  l = blue.size() - 2;
+  cout << "blues = " << l << endl;
+  for( int i = 0; i < l; i++ ){
+    vector<int> vs;
+    vs.push_back( blue[i][0] ); vs.push_back( blue[i][1] );
+    vs.push_back( blue[i+1][0] ); vs.push_back( blue[i+1][1] );
+    vs.push_back( blue[i+2][0] ); vs.push_back( blue[i+2][1] );
+    sort(vs.begin(),vs.end());
+    
+    int diff = 0;
+    for( vector<int>::iterator it = vs.begin()+1; it != vs.end(); it++ ){
+      if( *(it-1) != (*it) ){
+	diff++;
+      }
+    }
+    
+    if( diff == 2 ){
+      return false;
+    }
+    else{
+      cout << "blue ";
+      for( vector<int>::iterator it = vs.begin(); it != vs.end(); it++ ){
+	cout << *it << " ";
+      }
+      cout << endl;
+      cout << "diff = " << diff << endl;
+    }
+    }*/
+
+  cout << "Red " << red.size() << endl;
+  cout << "Blue " << blue.size() << endl;
+
+  return true;
+}
+
+
 void g::get_k4s( bool vertex ){
   numK4s = 0;
   k4s.clear();
@@ -1125,8 +1233,6 @@ void g::print_g6( ostream *o ){
   else{
     cout << "Error: Order not supported" << endl;
   }
-
-  
 
   int bitSize = n*(n-1)/2;
   int count = 0;

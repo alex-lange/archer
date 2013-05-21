@@ -115,6 +115,10 @@ int g::order() const{
   return n;
 }
 
+int g::size(){
+  return num_edges();
+}
+
 
 int g::num_edges(){
   recount_data();
@@ -169,6 +173,19 @@ int g::min_degree(){
     }
   }
   return min;
+}
+
+int g::max_degree(){
+  int max = 0;
+  cout << "degrees..." << endl;
+  for( int i = 0; i < n; i++ ){
+    cout << vdegree[i] << " ";
+    if( vdegree[i] > max ){
+      max = vdegree[i];
+    }
+  }
+  cout << endl;
+  return max;
 }
 
 void g::max_clique_backtrack( int l, int k ){
@@ -274,7 +291,9 @@ bool g::has_clique( int k, bool is ){
 void g::read_g6( string g6 ){
   int numEntries = n*(n-1)/2;
   int c = 0;
-  int c_count = 1;
+  int c_count;
+  if( n < 63 ) c_count = 1;
+  else c_count = 4;
   int i = 0;
   int j = 0;
   int b = 0;
