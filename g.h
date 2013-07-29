@@ -82,6 +82,11 @@ class g {
   int get_k4me();
   int ** get_tris_array();
   bool check_coloring( int * coloring );
+  bool larger;
+
+  // 6/20/2013, for domination tests
+  int get_array_size();
+  vset get_neighbors( int v );
   
  public:
   struct compZZ_pE;

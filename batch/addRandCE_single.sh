@@ -2,7 +2,7 @@
 
 # get all primes
 primes=`gawk 'BEGIN { RS="\n| " } ; {print $0 }' /home/alex/research/folkman/c++/primes/docs/primes_small.txt`
-data=/home/alex/research/data/all_cer/small_primes
+data=/home/alex/research/data/all_cer/small_sdp
 
 for n in $primes
 do

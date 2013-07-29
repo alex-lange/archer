@@ -23,29 +23,33 @@ g::g( const g &otherG ){
 
 // Destructor
 g::~g(){
-  for( int i = 0; i < oldN; i++ ){
-    delete[] edges[i];
-  }
-
-  delete[] edges;
-  k4s.clear();
-  
-  delete[] inTri;
-  delete[] inKs;
   delete[] vdegree;
-  
-  for( int i = 0; i < n; i++ ){
-    for( int j = 0; j < n; j++ ){
-      delete[] isTri[i][j];
-    }
-    delete[] isTri[i];
-  }
-  delete[] isTri;
 
-  for( vector<int*>::iterator it = ks.begin(); it != ks.end(); it++ ){
-    delete *it;
+  if( !larger ){
+    for( int i = 0; i < oldN; i++ ){
+      delete[] edges[i];
+    }
+    
+    delete[] edges;
+    k4s.clear();
+    
+    delete[] inTri;
+    delete[] inKs;
+    
+  
+    for( int i = 0; i < n; i++ ){
+      for( int j = 0; j < n; j++ ){
+	delete[] isTri[i][j];
+      }
+      delete[] isTri[i];
+    }
+    delete[] isTri;
+    
+    for( vector<int*>::iterator it = ks.begin(); it != ks.end(); it++ ){
+      delete *it;
+    }
+    ks.clear();
   }
-  ks.clear();
 }
 
 void g::set_up(){
@@ -86,6 +90,7 @@ void g::set_up(){
 
     beenModified = true;
     firstGo = true;
+    larger = false;
   }
   else{
     cerr << "WARNING: Graph is large, using less memory." << endl;
@@ -99,6 +104,8 @@ void g::set_up(){
       gA[i].resize( arraySize, 0 );
       gB[i].resize( arraySize, 0 );
       vdegree[i] = 0;
+    }
+    for( int i = 0; i < n; i++ ){
       for( int b = i + 1; b < n; b++ ){
 	set_insert( b, gB[i] );
       }
@@ -106,10 +113,19 @@ void g::set_up(){
     numEdges = 0;
     beenModified = true;
     firstGo = true;
+    larger = true;
   }
 
 }
 
+
+int g::get_array_size(){
+  return arraySize;
+}
+
+vset g::get_neighbors( int v ){
+  return gA[v];
+}
 
 int g::order() const{
   return n;
@@ -121,7 +137,7 @@ int g::size(){
 
 
 int g::num_edges(){
-  recount_data();
+  if( !larger) recount_data();
   return numEdges;
 }
 
@@ -132,8 +148,10 @@ void g::add_edge( int u, int v ){
       numEdges++;
       set_insert( u, gA[v] );
       set_insert( v, gA[u] );
-      edges[u][v] = numEdges;
-      edges[v][u] = numEdges;
+      if( !larger ){
+	edges[u][v] = numEdges;
+	edges[v][u] = numEdges;
+      }
       vdegree[u]++;
       vdegree[v]++;
       beenModified = true;
@@ -186,6 +204,10 @@ int g::max_degree(){
   }
   cout << endl;
   return max;
+}
+
+int g::degree( int v ){
+  return vdegree[v];
 }
 
 void g::max_clique_backtrack( int l, int k ){

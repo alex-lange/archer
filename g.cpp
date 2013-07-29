@@ -356,7 +356,7 @@ void g::make_turan( int r ){
 }
 
 int ** hamming;
-int cur_hami;
+int cur_hami, ham_q;
 
 void g::make_hamming( int d, int q ){
   int length = pow( q, d );
@@ -370,6 +370,7 @@ void g::make_hamming( int d, int q ){
   }
   cur_hami=0;
   int * cur_ham = new int[d];
+  ham_q = q;
   make_hamming_help(d,0,cur_ham);
 
   cout << "Creating hamming graph with order=" << length << ", d="<< d
@@ -405,7 +406,7 @@ void g::make_hamming_help( int d, int s, int * cur_ham ){
     cur_hami++;
   }
   else{
-    for( cur_ham[s] = 0; cur_ham[s] < 3; cur_ham[s]++ ){
+    for( cur_ham[s] = 0; cur_ham[s] < ham_q; cur_ham[s]++ ){
       make_hamming_help(d,s+1,cur_ham);
     }
   }

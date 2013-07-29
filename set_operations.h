@@ -17,8 +17,10 @@ bool in_set( int u, vset S );
 void set_cut( int u, vset &S, int arraySize );
 vset set_union( vset S, vset R, int arraySize );
 vset set_intersection( vset S, vset R, int arraySize );
+vset set_intersection( vset S, vset R, int sSize, int rSize );
 vset set_complement( vset S, int arraySize );
 int set_order( vset S, int arraySize );
+bool empty_set( vset S, int arraySize );
 bool not_empty( vset S );
 int first_bit( vset S, int arraySize );
 

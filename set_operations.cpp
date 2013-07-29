@@ -73,7 +73,7 @@ vset set_union( vset S, vset R, int arraySize){
 }
 
 // determines intersection of two sets
-// Algorithm 1.7
+// for domination, 6/20/2013
 vset set_intersection( vset S, vset R, int arraySize){
   vset T;
   T.resize( arraySize, 0 );
@@ -83,6 +83,24 @@ vset set_intersection( vset S, vset R, int arraySize){
   }
   return T;  
 }
+
+// determines intersection of two sets
+// Algorithm 1.7
+vset set_intersection( vset S, vset R, int sSize, int rSize){
+  int larger = sSize;
+  int smaller = sSize;
+  if( rSize < sSize ) smaller = rSize;
+  else larger = rSize;
+  
+  vset T;
+  T.resize( smaller, 0 );
+  for( int i = 0; i < smaller; i++ ){
+    // AND sets
+    T[i] = S[i] & R[i];
+  }
+  return T;  
+}
+
 
 // completemnts the set
 vset set_complement( vset S, int arraySize){
@@ -119,4 +137,12 @@ int first_bit( vset S, int arraySize ){
     if( j >= 0 ) return i * intSize + ( intSize - j - 1 );
   }
   return -1;
+}
+
+
+bool empty_set( vset S, int arraySize){
+  for( int i = 0; i < arraySize; i++ ){
+    if( S[i] != 0 ) return false;
+  }
+  return true;
 }

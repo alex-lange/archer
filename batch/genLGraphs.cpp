@@ -31,9 +31,12 @@ int main( int argc, char *argv[] ){
 		   << " edges" << " and " <<  test.num_tris() << " tris" << endl;
 	      ostringstream fn;
 	      fn << path << start << "_" << i;
-	      string filename = fn.str() + ".sat";
-	      ofstream sat (filename.c_str());
-	      test.print_sat( &sat );
+	      string eigName = fn.str() + ".eig";
+	      string rdyName = fn.str() + ".rdy";
+	      ofstream eig (eigName.c_str());
+	      ofstream rdy (rdyName.c_str());
+	      test.print_sparse_h( &eig );
+	      test.print_sparse_h( &rdy, true );
 	    }
 	  }
 	}
