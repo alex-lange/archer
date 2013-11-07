@@ -1,6 +1,6 @@
 //
 // File: g.h
-//
+// /
 
 #ifndef _G_H
 #define _G_H
