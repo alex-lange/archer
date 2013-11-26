@@ -41,6 +41,8 @@ class g {
   void remove_randvs( int num );
   int k4_free_process();
   int k4_free_process( vector<edge> * edges_in);
+  int k4_free_process2();
+  int tr_k4_free_process();
   void make_complement();
   void make_cycle();
   void make_complete();

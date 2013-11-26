@@ -236,6 +236,38 @@ void k4_free_proc_command::execute( g * graph, vector<string> args){
 }
 
 
+k4_free_proc2_command::k4_free_proc2_command(){
+  name = "k4_free2";
+  description = "Adds edges using the K4-free process";
+    // (randomly permutes all edges, adds edge if no K4 is formed)";
+
+  GraphCommandBase::base().register_c( name, this ); }
+
+void k4_free_proc2_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos  != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  int count = graph->k4_free_process2();
+  cout << "Added " << count << " edges." << endl;
+}
+
+
+tr_k4_free_proc_command::tr_k4_free_proc_command(){
+  name = "tr_k4_free";
+  description = "Adds edges using the triangle-rich K4-free process";
+  GraphCommandBase::base().register_c( name, this ); }
+
+void tr_k4_free_proc_command::execute( g * graph, vector<string> args){
+  vector<string>::iterator pos = args.begin() + 2;
+  if( pos  != args.end() ){
+    throw "Invalid argument number for " + name;
+  }
+  int count = graph->tr_k4_free_process();
+  cout << "Added " << count << " edges." << endl;
+}
+
+
 make_complement_command::make_complement_command(){
   name = "mk_comp";
   description = "Makes the graph the complement of itself";
@@ -382,53 +414,6 @@ void make_avoid_rand_connected_command::execute( g * graph, vector<string> args 
 
 void make_avoid_rand_connected_command::execute( g * graph, vector<g*> args){
   cout << graph->connect_graphs( args[1], args[0], true, true, 4 ) << " edges added." << endl;
-}
-
-
-
-make_galois_circ_command::make_galois_circ_command(){
-  name = "mk_gc";
-  description = "Makes residue-circulant graph based off the Galois Field of the order";
-  GraphCommandBase::base().register_c( name, this );
-}
-
-void make_galois_circ_command::execute( g * graph, vector<string> args){
-  vector<string>::iterator pos = args.begin() + 2;
-  if( pos + 3 != args.end() ){
-    throw "Invalid argument number for " + name;
-  }
-  graph->make_galois_circ( atoi(pos->c_str()),atoi((pos+1)->c_str()),
-			   atoi((pos+2)->c_str()));
-}
-
-
-make_projective_plane_command::make_projective_plane_command(){
-  name = "mk_pp";
-  description = "Makes graph based on projective plane";
-  GraphCommandBase::base().register_c( name, this );
-}
-
-void make_projective_plane_command::execute( g * graph, vector<string> args){
-  vector<string>::iterator pos = args.begin() + 2;
-  if( pos + 2 != args.end() ){
-    throw "Invalid argument number for " + name;
-  }
-  graph->make_projective_plane( atoi(pos->c_str()),atoi((pos+1)->c_str() ));
-}
-
-
-make_projective_plane_cut_command::make_projective_plane_cut_command(){
-  name = "mk_ppc";
-  description = "makes graph based on projective plane (only the 'absolute' vertices)";
-  GraphCommandBase::base().register_c( name, this );
-}
-
-void make_projective_plane_cut_command::execute( g * graph, vector<string> args){
-  vector<string>::iterator pos = args.begin() + 2;
-  if( pos + 2 != args.end() ){
-    throw "Invalid argument number for " + name;
-  }
-  graph->make_projective_plane( atoi(pos->c_str()),atoi((pos+1)->c_str() ), true );
 }
 
 
@@ -1009,15 +994,14 @@ remove_dist_vs_command removeDistVsCommand;
 remove_rand_vs_command removeRandVsCommand;
 remove_max_is_command removeMaxISCommand;
 k4_free_proc_command k4FreeProcess;
+k4_free_proc2_command k4FreeProcess2;
+tr_k4_free_proc_command trK4FreeProcess;
 make_complement_command makeComplementCommand;
 make_cyc_command makeCycCommand;
 make_comp_command makeCompCommand;
 make_res_circ_command makeResCircCommand;
 make_l_circ_command makeLCircCommand;
 make_gcd_circ_command makeGCDCircCommand;
-make_galois_circ_command makeGaloisCircCommand;
-make_projective_plane_command makeProjectivePlaneCommand;
-make_projective_plane_cut_command makeProjectivePlaneCutCommand;
 make_circ_command makeCircCommand;
 make_turan_command makeTuranCommand;
 make_hamming_command makeHammingCommand;

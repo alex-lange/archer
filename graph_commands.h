@@ -102,6 +102,20 @@ class k4_free_proc_command : public GraphCommand{
 };
 
 
+class k4_free_proc2_command : public GraphCommand{
+ public:
+  k4_free_proc2_command();
+  void execute( g * graph, vector<string> args );
+};
+
+class tr_k4_free_proc_command : public GraphCommand{
+ public:
+  tr_k4_free_proc_command();
+  void execute( g * graph, vector<string> args );
+};
+
+
+
 class make_complement_command : public GraphCommand{
  public:
   make_complement_command();
@@ -151,26 +165,6 @@ class make_circ_command : public GraphCommand{
   void execute( g * graph, vector<string> args);
 };
 
-
-class make_galois_circ_command : public GraphCommand{
- public:
-  make_galois_circ_command();
-  void execute( g * graph, vector<string> args);
-};
-
-
-class make_projective_plane_command : public GraphCommand{
- public:
-  make_projective_plane_command();
-  void execute( g * graph, vector<string> args);
-};
-
-
-class make_projective_plane_cut_command : public GraphCommand{
- public:
-  make_projective_plane_cut_command();
-  void execute( g * graph, vector<string> args);
-};
 
 
 class make_embedded_rc_command : public GraphCommand{

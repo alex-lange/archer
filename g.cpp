@@ -5,6 +5,7 @@
 #include <time.h>
 #include <utility>
 #include <math.h>
+#include <set>
 
 
 #include "g.h"
@@ -138,14 +139,124 @@ int g::k4_free_process( vector<edge>* edges_in ){
     v = it->v;
     if( !is_edge(u,v) ){
       if( !causes_k( u, v ) ){
-	add_edge( u, v );
-	count++;
+       add_edge( u, v );
+       count++;
 	//	cout << "(" << u << ", " << v << "), ";
       }
     }
   }
   return count;
 }
+
+int g::tr_k4_free_process(){
+  set< pair<int,int> > edges_in;
+  set< pair<int,int> > causes_tri;
+
+  for( int i = 0; i < n; i++ ){
+    for( int j = i+1; j < n; j++ ){
+      edges_in.insert(make_pair(i,j));
+    }
+  }
+  srand((unsigned)time(0));
+  int r,u,v;
+  int count = 0;
+  int tr_count = 0;
+  bool added;
+
+  while( !(edges_in.empty() && causes_tri.empty()) ){
+ //  cout << edges_in.size() << " " << causes_tri.size() << endl;
+    added = false;
+    if( !causes_tri.empty() ){
+      r = rand() % causes_tri.size();
+      set<pair<int,int> >::const_iterator it(causes_tri.begin());
+      advance(it,r);
+      u = it->first;
+      v = it->second;
+      if( !causes_k( u, v ) && !is_edge(u,v) ){
+        add_edge( u, v );
+        added = true;
+        tr_count++;
+      }
+      causes_tri.erase(it);
+    }
+    else{
+      r = rand() % edges_in.size();
+      set<pair<int,int> >::const_iterator it(edges_in.begin());
+      advance(it,r);
+      u = it->first;
+      v = it->second;
+      if( !causes_k( u, v ) && !is_edge(u,v) ){
+        add_edge( u, v );
+        added = true;
+        count++;
+      }
+      edges_in.erase(it);
+    }
+    // if added we can add more edges to causes_tri
+    if( added ){
+      for( int z = 0; z < n; z++ ){
+        if( z != u && z != v ){
+          int x; bool found_one = false;
+          if( is_edge(u,z) && !is_edge(v,z)){
+            x = v;
+            found_one = true;
+          }else if( is_edge( v,z ) && !is_edge(u,z) ){
+            x = u;
+            found_one = true;
+          }
+          if( found_one ){
+            pair<int,int> p = make_pair(x,z);
+            set<pair<int,int> >::iterator it = edges_in.find(p);
+            if(it != edges_in.end()){
+              causes_tri.insert(p);
+              edges_in.erase(it);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  cout << "TR count = " << tr_count << endl;
+  cout << "K4-free count = " << count << endl;
+
+  return count + tr_count;
+}
+
+/* "Triangle-Rich K4-Free Proces"
+  
+  Based on function k4_free_process2
+*/
+int g::k4_free_process2(){
+  set< pair<int,int> > edges_in;
+
+  for( int i = 0; i < n; i++ ){
+    for( int j = i+1; j < n; j++ ){
+      edges_in.insert(make_pair(i,j));
+    }
+  }
+  srand((unsigned)time(0));
+  int r,u,v;
+  int count = 0;
+
+  while( !edges_in.empty() ){
+    r = rand() % edges_in.size();
+    set<pair<int,int> >::const_iterator it(edges_in.begin());
+    advance(it,r);
+    u = it->first;
+    v = it->second;
+    if( !causes_k( u, v ) && !is_edge(u,v) ){
+     add_edge( u, v );
+     count++;
+    }
+
+    edges_in.erase(it);
+  }
+
+  return count;
+
+}
+
 
 void g::make_complement(){
   for( int i = 0; i < n; i++ ){
@@ -261,7 +372,7 @@ int g::make_rand_er( float sigma ){
       // Uses random value to determine if edge or not edge
       r = rand() / (float)RAND_MAX;
       if( r >= ( 1 - sigma )){
-	add_edge( x, y );
+       add_edge( x, y );
       }
     }
   }
@@ -449,9 +560,9 @@ bool g::join_graphs( int num, vector<g*> graphs ){
     end = graphs[current]->order();
     for( int i = 0; i < end - 1; i++ ){
       for( int j = i; j < end; j++ ){
-	if( graphs[current]->is_edge( i, j ) ){
-	  add_edge( start + i, start + j );
-	}
+       if( graphs[current]->is_edge( i, j ) ){
+         add_edge( start + i, start + j );
+       }
       }
     }
     start += end;
